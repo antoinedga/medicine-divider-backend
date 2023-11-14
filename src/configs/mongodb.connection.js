@@ -4,7 +4,7 @@ const PasswordRestToken = require("../models/passwordResetToken")
 const ViewRequest = require("../models/viewRequestSchema")
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect('mongodb+srv://antoineMac:Adga7241805@cluster0.al0gwkk.mongodb.net/?retryWrites=true&w=majority', {
+        const conn = await mongoose.connect(process.env.MONGO_DB_URL, {
             useNewUrlParser: true,
         });
         console.log(`MongoDB Connected`);
