@@ -1,16 +1,7 @@
 
 function getDayToIndex(day) {
-    console.log("in function instance of: " + typeof day)
-    if (day.match(/^[1-7]$/)) {
-        console.log("its number")
-        let dayToNumber = Number(day)
-        return (dayToNumber - 1);
-    }
 
-    if (typeof day === "string") {
-        console.log("its a string")
-        return getDayToIndexString(day)
-    }
+     return getDayToIndexString(day)
 }
 
 function getDayToIndexString(day) {
@@ -39,4 +30,4 @@ function getDayToIndexString(day) {
 
 }
 
-module.exports = getDayToIndex;
+module.exports = {getDayToIndex};

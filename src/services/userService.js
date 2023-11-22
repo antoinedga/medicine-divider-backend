@@ -1,6 +1,5 @@
 
 const MedicineDividerUserSchema = require("../models/medicineDividerUser")
-const InternalResponse = require("./responses/internalResponse");
 const medicineRoutineService = require("../services/MedicineRoutineService");
 const bcrypt = require("bcryptjs");
 const passportJwt = require("../utils/passportJwt")
@@ -25,10 +24,15 @@ async function createUser(request, response) {
              newUser.password = hash;
              newUser.save().then(result => {
                  console.log("DB " + result)
-                 return response.status(201).send({msg: "Successfully created user"})
+                 return { msg: "created user",
+                 success: true,
+                 code: 201}
+
              }).catch(exception => {
                  console.log(exception);
-                 return response.status(500).send({msg: "Error creating account"})
+                 return { msg: "error creating user",
+                     success: true,
+                     code: 500}
              })
          })
     })
@@ -59,7 +63,7 @@ async function loginUser(request, response) {
                     token: "bearer " + token
                 })
             } else {
-                return response.status(400).send({error: "Incorrect passworfd"})
+                return response.status(400).send({error: "Incorrect password"})
             }
         })
 

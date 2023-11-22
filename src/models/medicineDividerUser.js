@@ -12,6 +12,7 @@ const PillSchema
 
 const TimeIntervalSchema
     = new Schema({
+    time: {type: String, required: true},
     pills: [PillSchema]
 
 })

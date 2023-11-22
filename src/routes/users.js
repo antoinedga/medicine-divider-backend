@@ -4,7 +4,7 @@ const {createUserRequestValidator} = require('../validation/createUserRequestVal
 const {loginRequestValidator} = require("../validation/loginRequestValidator");
 
 const userService = require('../services/userService')
-const {request} = require("express");
+const {request, response} = require("express");
 const {validationResult} = require("express-validator");
 
 /* GET users listing. */
@@ -12,7 +12,7 @@ const {validationResult} = require("express-validator");
 
 router.post('/register',createUserRequestValidator, async function (req, res, next) {
     userService.createUser(req, res).then(result => {
-        return result;
+        return response.status(result.code).send(result);
     })
 });
 
