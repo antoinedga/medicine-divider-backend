@@ -64,4 +64,11 @@ const MedicineDividerUserSchema = new Schema({
         timestamps: true
     });
 
-module.exports = MedicineDividerUser = mongoose.model("MedicineDividerUser", MedicineDividerUserSchema);
+MedicineDividerUserSchema.statics.createTimeInterval = function(name){
+    return {
+        time: name,
+        pills: []
+    }
+}
+
+module.exports = mongoose.model("MedicineDividerUser", MedicineDividerUserSchema);

@@ -63,9 +63,9 @@ async function addTimeIntervalToUser(request) {
             );
 
             let updatedDays = updateDaysForNewTimeIntervals(updatedUser, newInterval)
+            console.log("new with timeInterval " + updatedDays)
             updatedUser = await MedicineDividerUserSchema.findByIdAndUpdate(request.user.id, updatedDays, {new: true})
 
-            console.log(updatedUser.medicineRoutine)
             return {
                 success: true,
                 code: 201,
@@ -78,10 +78,26 @@ async function addTimeIntervalToUser(request) {
 function updateDaysForNewTimeIntervals(model, newTimeIntervals) {
     let daysArray = model.medicineRoutine.days;
     for(let time of newTimeIntervals) {
-        for(let i = 0; i < daysArray; i++) {
-            let timeInterval = new TimeIntervalSchema();
-            timeInterval.name = time;
-            daysArray[i].timeIntervals.push(timeInterval)
+        for(let i = 0; i < daysArray.length; i++) {
+            console.log("2nd for loop")
+            let interval = MedicineDividerUserSchema.createTimeInterval(time);
+            daysArray[i].timeIntervals.push(interval)
+            console.log(daysArray[i])
+        }
+    }
+    console.log("days " + daysArray)
+    return model;
+}
+
+function removeDaysForDeletedTimeIntervals(model, deleteInterval) {
+    let daysArray = model.medicineRoutine.days;
+    for(let time of deleteInterval) {
+        for(let i = 0; i < daysArray.length; i++) {
+            console.log("before " + daysArray[i])
+            daysArray[i].timeIntervals = daysArray[i].timeIntervals.filter(item => {
+                return time.localeCompare(item.time) !== 0
+            })
+            console.log("After " + daysArray[i])
         }
     }
     return model;
@@ -89,11 +105,12 @@ function updateDaysForNewTimeIntervals(model, newTimeIntervals) {
 
 
 async function deleteTimeInterval(request) {
-    return await MedicineDividerUserSchema.findById(request.user.id, "id medicineRoutine.intervals").then(docs => {
+    return await MedicineDividerUserSchema.findById(request.user.id, "id medicineRoutine").then(docs => {
         let removal = request.body.removeInterval;
         let docsIntervals = docs.medicineRoutine.intervals.nameOfTimeSlots
         let filtered = docsIntervals.filter(time => !removal.includes(time))
         console.log("filtered: " + filtered)
+        removeDaysForDeletedTimeIntervals(docs, removal)
         return MedicineDividerUserSchema.findByIdAndUpdate(request.user.id, {medicineRoutine:{intervals: {nameOfTimeSlots: filtered}}}).then(result => {
             return { success: true, msg: "updated", code: 200}
         })
