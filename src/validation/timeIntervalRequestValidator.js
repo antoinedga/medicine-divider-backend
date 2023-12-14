@@ -25,7 +25,7 @@ module.exports.newTimeIntervalValidators = [
         const errors = validationResult(req);
         console.log((JSON.stringify(errors.array())))
         if (!errors.isEmpty())
-            return res.status(400).json({errors: errors.array()});
+            return res.status(400).json({error: errors.array()[0].msg});
         next();
     }
 ]
