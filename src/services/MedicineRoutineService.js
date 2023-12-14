@@ -1,6 +1,4 @@
 const MedicineDividerUserSchema = require("../models/medicineDividerUser")
-var Mongoose = require('mongoose');
-
 
 async function getUserMedicineRoutine(userId) {
     return MedicineDividerUserSchema.findById({_id: userId},"medicineRoutine").then((docs) => {

@@ -8,12 +8,13 @@ function calculate_age(dob) {
 
 module.exports.createUserRequestValidator = [
                 body('name', 'name is required').exists().notEmpty().trim().escape(),
-                body('email', 'email field is required').exists().isEmail().withMessage("not a valid email").normalizeEmail(),
+                body('email', 'email field is required').exists().isEmail().withMessage("not a valid email").trim().normalizeEmail(),
+
                 body('password').exists().withMessage("Must pass Password to create User").isStrongPassword({       minLength: 8,
                     minLowercase: 1,
                     minUppercase: 1,
                     minNumbers: 1,
-                    minSymbols: 1}).withMessage("NOT A STRONG PASSWORD"),
+                    minSymbols: 1}).withMessage("NOT A STRONG PASSWORD").trim(),
                 body('dateOfBirth', "dateOfBirth is required").exists().isISO8601('yyyy-mm-dd').withMessage("Must be in yyyy-mm-dd format").toDate().custom((birthDate, { req }) => {
                     console.log(calculate_age(birthDate))
     if (calculate_age(birthDate) < 18) {
