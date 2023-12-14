@@ -1,6 +1,22 @@
 const {body,   validationResult} = require("express-validator");
 const {timeIntervalSymbols} = require("../utils/timeIntervalEnum");
 
+function checkForDuplicates(array) {
+    let valuesAlreadySeen = []
+
+    for (let i = 0; i < array.length; i++) {
+        let value = array[i]
+        if (valuesAlreadySeen.indexOf(value) !== -1) {
+            return true
+        }
+        valuesAlreadySeen.push(value)
+    }
+    return false
+}
+
+
+module.exports.checkForDuplicates = checkForDuplicates;
+
 module.exports.newTimeIntervalValidators = [
     body('newTime').exists().custom( value => {
         if (value.length > 10) {
@@ -58,17 +74,3 @@ module.exports.removalTimeIntervalValidators = [
         next();
     }
 ]
-
-
-function checkForDuplicates(array) {
-    let valuesAlreadySeen = []
-
-    for (let i = 0; i < array.length; i++) {
-        let value = array[i]
-        if (valuesAlreadySeen.indexOf(value) !== -1) {
-            return true
-        }
-        valuesAlreadySeen.push(value)
-    }
-    return false
-}
