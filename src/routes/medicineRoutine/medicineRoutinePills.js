@@ -1,14 +1,19 @@
 var express = require('express');
 var router = express.Router();
-const MedicineDividerUserSchema = require("../../models/medicineDividerUser")
-const MedicineRoutineDayService = require("../../services/MedicineRoutineDayService");
+const MedicineRoutinePillService = require("../../services/MedicineRoutinePillService");
 
 
-router.post(`/pills`, function (req, res){
-
+router.post("", function (req, res){
+    MedicineRoutinePillService.addPillFromRoutine(req).then(result => {
+        return res.status(result.code).send(result)
+    })
 })
 
-router.delete("/pills", function (req, res) {
-
+router.delete("", function (req, res) {
+    MedicineRoutinePillService.removePillFromRoutine(req).then(result => {
+        return res.status(result.code).send(result)
+    })
 })
 
+
+module.exports = router;

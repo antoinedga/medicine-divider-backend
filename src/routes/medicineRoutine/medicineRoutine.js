@@ -3,7 +3,7 @@ var router = express.Router();
 const medicineRoutineService = require("../../services/MedicineRoutineService")
 const medicineRoutineDay = require("./medicineRoutineDay")
 const medicineRoutineTime = require("./medicineRoutineTimes")
-
+const medicineRoutinePill = require("./medicineRoutinePills")
 
 
 
@@ -17,6 +17,7 @@ router.get("/", function (req, res) {
 
 router.use("/times",medicineRoutineTime )
 router.use("/day", medicineRoutineDay)
+router.use("/pill", medicineRoutinePill)
 
 
 module.exports = router;
