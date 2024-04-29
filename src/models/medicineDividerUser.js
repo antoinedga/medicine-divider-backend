@@ -60,20 +60,23 @@ const MedicineDividerUserSchema = new Schema({
     timestamps: true,
 });
 
-MedicineDividerUserSchema.statics.createTimeInterval = function (time) {
+const medicineRoutineModel = mongoose.model("MedicineDividerUser", MedicineDividerUserSchema);
+module.exports = medicineRoutineModel;
+
+medicineRoutineModel.createTimeInterval = function (time) {
     return {
         time: time,
         pills: []
     };
 };
 
-MedicineRoutineSchema.statics.createPill = function (name, dosage, delivery, endDate) {
+medicineRoutineModel.createPill = function (name, dosage, delivery, endDate) {
     return {
         name, dosage, delivery, endDate
     };
 };
 
-MedicineRoutineSchema.statics.createDay = function (name, dosage, delivery, endDate) {
+medicineRoutineModel.createDay = function (name, dosage, delivery, endDate) {
     return {
         name, dosage, delivery, endDate
     };
@@ -86,5 +89,3 @@ MedicineDividerUserSchema.post('findOne', function (doc, next) {
     }
     return next(); // Call next without modifying if no document is found
 });
-
-module.exports = mongoose.model("MedicineDividerUser", MedicineDividerUserSchema);

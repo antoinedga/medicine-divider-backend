@@ -15,7 +15,8 @@ router.get(API_PATH, auth0CheckJwt, async function (req, res) {
 });
 
 router.post(API_PATH, auth0CheckJwt, addPillValidator, async function(req, res) {
-    return res.send()
+    let result = await medicineRoutineService.addPillToRoutine(req);
+    return res.status(result.code).send(result)
 });
 
 router.use(authErrorHandler)

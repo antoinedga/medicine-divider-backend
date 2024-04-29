@@ -1,14 +1,13 @@
 const {body, validationResult } = require('express-validator')
-const {timeIntervalSymbols, timeIntervalAsArray} = require("../utils/timeIntervalEnum");
+const { timeIntervalAsArray} = require("../utils/timeIntervalEnum");
+const {VALID_LONG_DAYS_NAMES, VALID_SHORT_DAYS_NAMES} = require("../utils/dayUtil")
 
 
 const isValidDayName = value => {
-    const validDayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const validShortDayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
     // Convert the input value to lowercase for case-insensitive comparison
     const lowercaseValue = value.toLowerCase();
     // Check if the lowercase value is included in either the full or shorthand day names array
-    return validDayNames.includes(lowercaseValue) || validShortDayNames.includes(lowercaseValue);
+    return VALID_LONG_DAYS_NAMES.includes(lowercaseValue) || VALID_SHORT_DAYS_NAMES.includes(lowercaseValue);
 };
 
 const isValidTime = value => {

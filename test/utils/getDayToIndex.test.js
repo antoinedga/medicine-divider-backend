@@ -1,4 +1,4 @@
-const getDayToIndex = require("../../src/utils/getDayToIndex")
+const getDayToIndex = require("../../src/utils/dayUtil")
 
 describe('To Test getDayToIndex for Days', function () {
     test.each([
