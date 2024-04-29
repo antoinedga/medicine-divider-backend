@@ -1,59 +1,31 @@
 const {body, validationResult } = require('express-validator')
-const {timeIntervalSymbols} = require("../utils/timeIntervalEnum");
-const {checkForDuplicatesTimes} = require("./timeIntervalRequestValidator");
-const {isValidDayName, checkForDuplicateDays} = require("../utils/dayNameUtil")
+const {timeIntervalSymbols, timeIntervalAsArray} = require("../utils/timeIntervalEnum");
+
+
+const isValidDayName = value => {
+    const validDayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const validShortDayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    // Convert the input value to lowercase for case-insensitive comparison
+    const lowercaseValue = value.toLowerCase();
+    // Check if the lowercase value is included in either the full or shorthand day names array
+    return validDayNames.includes(lowercaseValue) || validShortDayNames.includes(lowercaseValue);
+};
+
+const isValidTime = value => {
+    return timeIntervalAsArray.includes(value)
+}
 
 module.exports = addPillValidator = [
-body("name")
-    .exists().withMessage("Objects in array must have \'name\' property")
-    .isString().withMessage("name property in object(s) must be a String")
-    .isLength({min: 3}).withMessage("Object's name property must be a minimum of 3 characters")
-    .isLength({max: 50}).withMessage("Object's name property must not exceed 50 characters")
-    .trim().escape(),
+    body('pillsToAdd').isArray().withMessage('pillsToAdd must be an array'),
+    body('pillsToAdd.*.days').isArray().withMessage('days must be an array'),
+    body('pillsToAdd.*.days.*').custom(isValidDayName).withMessage('Invalid day name'),
 
-body("dosage")
-    .exists().withMessage("Pills must have dosage")
-    .isString().withMessage("Pill's Dosage must be a String")
-    .isLength({min:3}).withMessage("Pill's dosage needs to be a minimum of 3 characters long")
-    .trim().escape(),
+    body('pillsToAdd.*.times').isArray().withMessage('times must be an array'),
+    body('pillsToAdd.*.times.*').custom(isValidTime).withMessage('time must be in this format: 11am'),
 
-body("frequency")
-    .exists().withMessage("Pills requires a Frequency property")
-    .isObject().withMessage("Pill's Frequency property is required to be an object with the following properties: [\"times: [10am, 12pm]\", \"days: [\"mon\", \"thurs\", \"fri\"]\"]"),
-
-body("frequency.days")
-    .exists().withMessage("")
-    .isArray({min: 1}).withMessage("")
-    .custom(value => {
-        for(let i = 0; i < value.length; i++) {
-            if(!isValidDayName(value[i])) {
-                throw new Error(`value at index: ${i} in day array is not valid day name. i.e: [mon, tues, wed, thurs, fri, sat, sun] `)
-            }
-        }
-
-        if(checkForDuplicateDays(value)) {
-            throw new Error("Pill's Frequency Day Array cannot contain duplicate days")
-        }
-    }),
-body("frequency.times")
-    .exists().withMessage("")
-    .isArray({min: 1}).withMessage("")
-    .custom(value => {
-
-        // valid enum timeInterval
-        for(let i = 0; i < value.length; i++) {
-            if (!timeIntervalSymbols.propertyIsEnumerable(value[i])) {
-                throw new Error(`value at index: ${i} is not a valid timeInterval`);
-            }
-        }
-
-        // duplicate check
-        if (checkForDuplicatesTimes(value)) {
-            throw new Error("Pill's Frequency Times cannot contain duplicate times")
-        }
-
-        return true;
-    })
+    body('pillsToAdd.*.pill').isObject().withMessage('pill must be an object with the following properties: name & dosage'),
+    body('pillsToAdd.*.pill.name').notEmpty().withMessage('Pill\'s name is required'),
+    body('pillsToAdd.*.pill.dosage').notEmpty().withMessage('Pill\'s dosage is required')
     ,(req, res, next) => {
         console.log("inside validator")
         const errors = validationResult(req);
@@ -62,3 +34,4 @@ body("frequency.times")
         next();
     }
 ]
+

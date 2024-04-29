@@ -1,13 +1,13 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
-const ViewRequestSchema = new Schema({
+const ViewerRequestSchema = new Schema({
     objectId: Schema.ObjectId,
-    requester: {
+    sender: {
         type: Schema.ObjectId,
         required: true
     },
-    recipient: {
+    receiver: {
         type: Schema.ObjectId,
         required: true
     },
@@ -22,12 +22,12 @@ const ViewRequestSchema = new Schema({
         timestamps: true,
     })
 
-let model = mongoose.model("ViewRequest", ViewRequestSchema)
+let model = mongoose.model("ViewRequest", ViewerRequestSchema)
 
-ViewRequestSchema.statics.createViewRequest = function(requester, recipient) {
+ViewerRequestSchema.statics.createViewRequest = function(sender, receiver) {
     let temp = new model()
-    temp.requester = requester;
-    temp.recipient = recipient;
+    temp.sender = sender;
+    temp.receiver = receiver;
     return temp;
 }
 module.exports = ViewRequest = model;

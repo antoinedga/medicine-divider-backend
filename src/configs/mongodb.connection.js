@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const MedicineDividerUserSchema = require("../models/medicineDividerUser")
-const PasswordRestToken = require("../models/passwordResetToken")
 const ViewRequest = require("../models/viewRequestSchema")
 const connectDB = async () => {
     try {

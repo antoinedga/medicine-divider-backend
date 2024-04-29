@@ -1,32 +1,24 @@
-require('dotenv').config()
-var express = require('express');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+require('./src/configs/configPropertyValidator')
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 const helmet = require('helmet')
+const bodyParser = require('body-parser')
 const connectDB = require('./src/configs/mongodb.connection');
-var limiter= require('./src/configs/rate.limiter')
-var indexRouter = require('./src/routes/index');
-var usersRouter = require('./src/routes/users');
-var medicineRoutineRouter = require("./src/routes/medicineRoutine/medicineRoutine")
-var app = express();
-const passport    = require('passport');
+const limiter= require('./src/configs/rate.limiter')
+const indexRouter = require('./src/routes/index');
+const app = express();
 
-console.log(process.env.RATE_LIMIT_WINDOW_MIN)
-require('./src/utils/passportJwt').jwtStrategy(passport);
-
-app.use(helmet())
-app.disable('x-powered-by')
-app.use(limiter)
+app.use(helmet());
+app.disable('x-powered-by');
+app.use(limiter);
 app.use(logger('common'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
 connectDB();
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/medicine/routine',
-    passport.authenticate("jwt", { session: false }), medicineRoutineRouter);
+app.use('/',indexRouter);
 
 const port = process.env.PORT || 8080; // process.env.port is Heroku's port if you choose to deploy the app there
 app.listen(port, () => console.log(`Server up and running on port ${port} !`));

@@ -18,7 +18,7 @@ function checkForDuplicatesTimes(array) {
 module.exports.checkForDuplicatesTimes = checkForDuplicatesTimes;
 
 module.exports.newTimeIntervalValidators = [
-    body('newTime').exists().custom( value => {
+    body('times').exists().custom( value => {
         if (value.length > 10) {
             throw new Error('cannot send more than 10 intervals');
         }

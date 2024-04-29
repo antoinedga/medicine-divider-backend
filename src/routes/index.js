@@ -1,17 +1,26 @@
 var express = require('express');
 var router = express.Router();
-const medicineRoutineService = require("../services/MedicineRoutineService");
-const viewerService = require("../services/viewerService")
-const addPillValidator = require("../validation/addPillValidator")
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  viewerService.searchForUserByEmail("a").then(response => {
-    return res.status(200).send(response)
-  })
-});
+const medicineRoutineService = require("./medicineRoutine/medicineRoutine");
+const timeIntervalRoutes = require("./TimeInterval/TimeIntervalRoutes");
+const userRoutes = require("./usersRoutes")
 
-router.post("/test",addPillValidator, function(req, res) {
-  return res.send("success")
-} )
+const API_VERSION_PATH = "/api/v1"
+
+
+function handleAuthError(err, req, res, next) {
+    // If authentication error (token expired, invalid token, etc.)
+    if (err.name === 'UnauthorizedError' || err.name === 'InvalidTokenError') {
+        // Customize the response here
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    // For other errors, pass them to the default error handler
+    next(err);
+}
+
+router.use(handleAuthError)
+
+router.use(userRoutes);
+router.use(API_VERSION_PATH, timeIntervalRoutes);
+router.use(API_VERSION_PATH, medicineRoutineService)
 
 module.exports = router;

@@ -1,91 +1,56 @@
-
 const MedicineDividerUserSchema = require("../models/medicineDividerUser")
-const medicineRoutineService = require("../services/MedicineRoutineService");
-const bcrypt = require("bcryptjs");
-const passportJwt = require("../utils/passportJwt")
-const {token} = require("morgan");
+const {managementClient, authenticationClient} = require("../configs/auth0client")
 
 async function createUser(request, response) {
+    try {
+        let email = request.body.email;
+        let emailExist = await doesEmailExist(email)
 
-    let newUser = new MedicineDividerUserSchema();
-    let emailExist = await doesEmailExist(request.body.email)
-    if (emailExist) {
-        return response.status(400).send({msg: "Email already in use"})
-    }
-
-    newUser.name = request.body.name;
-    newUser.email = request.body.email;
-    newUser.dateOfBirth = request.body.dateOfBirth;
-
-    bcrypt.genSalt(10, (err, salt) => {
-    bcrypt.hash(request.body.password, salt,(err, hash) => {
-             if (err) throw err;
-             console.log("to do hash");
-             newUser.password = hash;
-             newUser.save().then(result => {
-                 console.log("DB " + result)
-                 return { msg: "created user",
-                 success: true,
-                 code: 201}
-
-             }).catch(exception => {
-                 console.log(exception);
-                 return { msg: "error creating user",
-                     success: true,
-                     code: 500}
-             })
-         })
-    })
-}
-
-async function loginUser(request, response) {
-    console.log("Login called")
-    return MedicineDividerUserSchema.findOne({ email: request.body.email }).then(user => {
-        if (!user) {
-            return response.status(404).send(
-                {
-                    error: "No account associated with this email!"
-                })
+        if (emailExist) {
+            return {
+                msg: "Email already in use",
+                code: 400,
+                success: false
+            }
         }
 
-        bcrypt.compare(request.body.password, user.password).then(async isMatch => {
-            // user password matches, create jwt
-            console.log("comparing")
-            if (isMatch) {
-                const payload = {
-                    id: user.id,
-                    name: user.name
-                };
+        // Create user in Auth0 using email as username
+        const createdUser = await authenticationClient.database.signUp({
+            connection: 'Username-Password-Authentication',
+            email: email,
+            username: email, // Use email as username
+            password: request.body.password,
+        });
 
-                let token = await passportJwt.signJwt(payload);
-                return response.status(200).send({
-                    success: true,
-                    token: "bearer " + token
-                })
-            } else {
-                return response.status(400).send({error: "Incorrect password"})
-            }
-        })
+        let medicineUserSchema = new MedicineDividerUserSchema();
+        medicineUserSchema.id = createdUser.data['_id'];
+        medicineUserSchema.name = request.body.name;
+        medicineUserSchema.email = request.body.email;
+        medicineUserSchema.dateOfBirth = request.body.dateOfBirth;
 
-    })
+        let result = await medicineUserSchema.save();
+        console.log("DB " + result);
 
-async function forgotPasswordRequest(email) {
-
-        MedicineDividerUserSchema.findOne({email: email}).then(result => {
-            if (!result) {
-                return {
-                    error: "No Account associated with that email"
-                }
-            }
-        })
+        return {
+            msg: "User created successfully",
+            success: true,
+            code: 201
+        };
+    } catch (error) {
+        console.log(error);
+        return {
+            msg: "Error creating user",
+            success: false,
+            code: 500
+        };
     }
 }
 
-function doesEmailExist(email) {
-    return MedicineDividerUserSchema.findOne({email: email}).then( result => {
-        return result ? true : false;
-    })
+async function doesEmailExist(email) {
+    let usersByEmail = await managementClient.usersByEmail.getByEmail({email: email});
+    return usersByEmail && usersByEmail.data.length > 0;
+
 }
 
-module.exports = {createUser, loginUser};
+module.exports = {createUser};
 
