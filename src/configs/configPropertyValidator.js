@@ -4,7 +4,7 @@
  * */
 const dotenv = require('dotenv');
 dotenv.config(); // Load environment variables from .env file
-const propertiesToCheck = ['MONGO_DB_URL', 'JWT_SECRET_OR_KEY', 'AUTH0_SECRET', 'AUTH0_BASE_URL', 'AUTH0_CLIENT_ID', 'AUTH0_ISSUER_BASE_URL', "AUTH0_DOMAIN"];
+const propertiesToCheck = ['MONGO_DB_URL', 'JWT_SECRET_OR_KEY', 'AUTH0_SECRET', 'AUTH0_BASE_URL', 'AUTH0_CLIENT_ID', 'AUTH0_ISSUER_BASE_URL', "AUTH0_DOMAIN", "CONSENT_FILE_PATH"];
 function validateEnvProperty(property) {
     if (!process.env[property]) {
         console.error(`Error: ${property} is not set in the .env file`);

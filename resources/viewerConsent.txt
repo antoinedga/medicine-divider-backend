@@ -1,0 +1,6 @@
+Before proceeding, please read and acknowledge the following:
+
+Non-HIPAA Compliance: This application is not HIPAA-compliant. As such, the privacy and security standards required by HIPAA (Health Insurance Portability and Accountability Act) may not be fully met. Therefore, the confidentiality of medical information accessed through this application cannot be guaranteed.
+Limited Liability: While we strive to maintain the highest standards of security and privacy, we cannot guarantee the absolute security of the information shared through this platform. By becoming a viewer of someone else's records, you acknowledge and accept that there are inherent risks associated with sharing and accessing personal information online.
+Responsibility: As a viewer, you are responsible for ensuring the confidentiality and integrity of the information you access. Any unauthorized disclosure or misuse of this information may have legal consequences.
+Informed Decision: By proceeding, you confirm that you understand the risks and limitations outlined above and agree to use the information accessed through this application responsibly and in compliance with applicable laws and regulations.

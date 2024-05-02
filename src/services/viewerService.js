@@ -15,45 +15,67 @@ function getAllViewers(userId) {
 
 function searchForUserByEmail(email) {
     return MedicineDividerUserSchema.find({name: new RegExp(email, 'i')}, "name email").then(docs => {
-        if (docs == null || docs.length === 0)
-            return {
-                msg: "no account with that email"
-            }
         return {
-            msg: "success",
-            search: docs
+            data: docs == null || docs.length === 0 ? [] : docs
         }
     }).catch(error => {
-        throw new Error("Internal Error when searching for users")
+        console.log("Internal Error when searching for users")
+        return {
+            success: false,
+            code: 500,
+            msg: "Internal Server Error"
+        }
     })
 }
 
 async function sendViewRequest(request) {
-    const decodedToken = req.auth;
-    // Extract user ID from the decoded JWT token's payload
-    const userId = decodedToken.payload.sub;
+    try {
+        const decodedToken = request.auth;
+        // Extract user ID from the decoded JWT token's payload
+        const userId = decodedToken.payload.sub;
 
-    const receiver = await MedicineDividerUserSchema.findOne({email: req.body.email}, '_id name email').exec();
-    // if receiver exist
-    if (!receiver) {
+        const receiver = await MedicineDividerUserSchema.findOne({email: req.body.email}, '_id name email').exec();
+        // if receiver exist
+        if (!receiver) {
+            return {
+                success: false,
+                code: 404,
+                msg: "No User with Email to send Viewer Request"
+            }
+        }
+        const receiverId = receiver.id;
+
+        // if viewerRequest already sent
+        // Check if a viewer request already exists
+        const existingRequest = await ViewerRequest.findOne({sender: userId, receiver: receiverId});
+        if (existingRequest) {
+            return {
+                success: false,
+                code: 400,
+                msg: "Request already exist"
+            };
+        }
+
+        const newRequest = ViewerRequest.createNewViewerRequest(userId, receiverId);
+        await newRequest.save();
         return {
-            success: false,
-            code: 404,
-            msg: "No User with Email to send Viewer Request"
+            success: true,
+            code: 201,
+            msg: "Successfully created viewer Request"
         }
     }
-    // if viewerRequest already sent
-    // Check if a viewer request already exists
-    const existingRequest = await ViewerRequest.findOne({ sender: userId, receiver: receiver._id });
-    if (existingRequest) {
-        return res.status(400).json({ message: "Viewer request already sent" });
+    catch (error) {
+        console.log("Internal Error when sending viewer Request")
+        return {
+            success: false,
+            code: 500,
+        }
     }
-
-    const newRequest = new ViewerRequest({ sender: userId, receiver: receiverId });
-
-
 }
 
+async function getViewerRequest(request) {
+
+}
 function acceptViewRequest() {
 
 }
