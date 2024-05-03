@@ -5,7 +5,7 @@ const authErrorHandler = require("../../utils/authErrorHandlerUtil");
 
 const VIEWER_PATH = "/viewer/requests";
 const CONSENT_MESSAGE = require("../../utils/consentMessageUtil")
-console.log(CONSENT_MESSAGE)
+
 router.get(VIEWER_PATH, async function(req,res) {
 
 });

@@ -43,7 +43,7 @@ module.exports.newTimeIntervalValidators = [
     }
 ]
 
-module.exports. deleteTimeIntervalValidators = [
+module.exports.deleteTimeIntervalValidators = [
     body('times').exists().custom( value => {
         if (value.length > 10) {
             throw new Error('cannot send more than 10 intervals');
@@ -71,3 +71,23 @@ module.exports. deleteTimeIntervalValidators = [
         next();
     }
 ]
+
+module.exports.updateTimeIntervalValidator = [
+    body('updateTime').exists().isArray({min: 1, max: 5}).withMessage('updateTime must be an array'),
+    body("updateTime.*").isObject().withMessage("must be an object"),
+    body("updateTime.*.to").exists().custom(isTimeEnum).withMessage(""),
+    body("updateTime.*.from").exists().custom(isTimeEnum).withMessage("")
+    ,(req, res, next) => {
+        console.log("inside validator")
+        const errors = validationResult(req);
+        if (!errors.isEmpty())
+            return res.status(400).json({error: errors.array()[0].msg});
+        next();
+    }
+];
+
+function isTimeEnum(value) {
+    if (!timeIntervalSymbols.propertyIsEnumerable(value)) {
+        throw new Error(`value at index: ${value} is not a valid timeInterval`);
+    }
+}

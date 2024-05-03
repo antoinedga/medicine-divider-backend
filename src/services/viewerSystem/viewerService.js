@@ -1,5 +1,5 @@
-const MedicineDividerUserSchema = require("../models/medicineDividerUser")
-const ViewerRequest = require("../models/viewRequestSchema");
+const MedicineDividerUserSchema = require("../../models/medicineDividerUser")
+const ViewerRequest = require("../../models/viewRequestSchema");
 
 
 function getAllViewers(userId) {
