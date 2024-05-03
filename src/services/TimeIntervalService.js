@@ -20,12 +20,11 @@ async function getTimeInterval(userId) {
     }
 }
 
-
-async function updateTimeInterval(request) {
+async function addTimeInterval(request) {
     const decodedToken = request.auth;
     // Extract user ID from the decoded JWT token's payload
     const userId = decodedToken.payload.sub;
-    let document = await MedicineDividerUserSchema.findOne({id: userId}, null).exec();
+    let document = await MedicineDividerUserSchema.findOne({id: userId}, null, null).exec();
 
     let newTimeInterval = request.body.times;
     let dbIntervalSet = new Set(document.medicineRoutine.timeIntervals);
@@ -73,7 +72,7 @@ async function deleteTimeIntervals(request) {
         const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
-        let document = await MedicineDividerUserSchema.findOne({id: userId}).exec();
+        let document = await MedicineDividerUserSchema.findOne({id: userId}, null, null).exec();
 
         // Remove times from medicineRoutine.timeIntervals
         for (let i = 0; i < document.medicineRoutine.timeIntervals.length; i++) {
@@ -107,4 +106,88 @@ async function deleteTimeIntervals(request) {
     }
 }
 
-module.exports = {updateTimeInterval, getTimeInterval, deleteTimeIntervals}
+async function updateTimeIntervals(request) {
+    try {
+        const decodedToken = request.auth;
+        // Extract user ID from the decoded JWT token's payload
+        const userId = decodedToken.payload.sub;
+        const timeIntervals = request.body.updateTime;
+
+        let document = await MedicineDividerUserSchema.findOne({id: userId}, null, null).exec();
+        let existingTimeIntervals = document.medicineRoutine.timeIntervals;
+        let result = null;
+
+
+        for (const {from, to} of timeIntervals) {
+            // Validate the update
+            result = validateTimeIntervalUpdate(existingTimeIntervals, from, to);
+            if (!result.success) {
+                return {
+                    success: false,
+                    code: 400,
+                    msg: result.msg
+                }
+            }
+            // If validation passes, update the existing time intervals
+            existingTimeIntervals = existingTimeIntervals.map(interval => {
+                if (interval === from) {
+                    return to;
+                }
+                return interval;
+            });
+
+            // Update timeIntervals array in medicineRoutine
+            document.medicineRoutine.timeIntervals = existingTimeIntervals;
+
+            // Update pillsTimeSlots for each day
+            for (const day of document.medicineRoutine.days) {
+                for (const pillsTimeSlot of day.pillsTimeSlots) {
+                    if (pillsTimeSlot.time === from) {
+                        pillsTimeSlot.time = to;
+                    }
+                }
+            }
+        }
+        let updatedDocument = await document.save();
+        return {
+            success: true,
+            code: 201,
+            data: updatedDocument
+        }
+    }
+    catch (error) {
+        console.error(error)
+        console.error("ERROR IN UPDATE TIME")
+        return {
+            success: false,
+            code: 500,
+            msg: "INTERNAL SERVER ERROR"
+        }
+    }
+}
+
+// Function to validate a single time interval update
+const validateTimeIntervalUpdate = (existingTimes, from, to) => {
+    // Check if 'from' exists in existing time intervals
+    if (!existingTimes.includes(from)) {
+        return {
+            success: false,
+            msg: `Time interval starting at ${from} does not exist`
+        }
+    }
+
+    // Check if 'to' value is not already present in existing time intervals
+    if (existingTimes.includes(to)) {
+        return {
+            success: false,
+            msg: `Time interval ending at ${to} already exists`
+        }
+    }
+
+    return {
+        success: true,
+        msg: ""
+    }
+};
+
+module.exports = {addTimeInterval, getTimeInterval, deleteTimeIntervals, updateTimeIntervals}
