@@ -6,7 +6,7 @@ const viewerSystemRoutes = require("./viewerServiceRoute/viewerSystemRoutes")
 const userRoutes = require("./usersRoutes")
 
 const API_VERSION_PATH = "/api/v1"
-
+const API_ROUTINE_PATH = "/routine";
 
 function handleAuthError(err, req, res, next) {
     // If authentication error (token expired, invalid token, etc.)
@@ -21,8 +21,8 @@ function handleAuthError(err, req, res, next) {
 router.use(handleAuthError);
 
 router.use(userRoutes);
-router.use(API_VERSION_PATH, timeIntervalRoutes);
-router.use(API_VERSION_PATH, medicineRoutineService);
+router.use(API_VERSION_PATH + API_ROUTINE_PATH, timeIntervalRoutes);
+router.use(API_VERSION_PATH + API_ROUTINE_PATH, medicineRoutineService);
 router.use(API_VERSION_PATH, viewerSystemRoutes);
 
 module.exports = router;
