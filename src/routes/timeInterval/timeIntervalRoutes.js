@@ -1,5 +1,5 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const auth0CheckJwt = require("../../configs/auth0CheckJwt")
 const {newTimeIntervalValidators,deleteTimeIntervalValidators, updateTimeIntervalValidator} = require("../../validation/timeIntervalRequestValidator")
 const timeIntervalService = require("../../services/TimeIntervalService")
@@ -16,7 +16,7 @@ router.get(TIME_PATH, auth0CheckJwt, async function (req, res) {
 
 // ADD time interval
 router.post(TIME_PATH, auth0CheckJwt, newTimeIntervalValidators, async function(req, res) {
-    let result = await timeIntervalService.updateTimeInterval(req);
+    let result = await timeIntervalService.addTimeInterval(req);
     return res.status(result.code).send(result);
 });
 
@@ -26,8 +26,9 @@ router.delete(TIME_PATH, auth0CheckJwt, deleteTimeIntervalValidators, async func
     return res.status(result.code).send(result);
 });
 
-router.patch(TIME_PATH, auth0CheckJwt, updateTimeIntervalValidator, function (req, res) {
-    return res.send()
+router.patch(TIME_PATH, auth0CheckJwt, updateTimeIntervalValidator, async function (req, res) {
+    let result = await timeIntervalService.updateTimeIntervals(req);
+    return res.status(result.code).send(result);
 });
 
 router.use(authErrorHandler)

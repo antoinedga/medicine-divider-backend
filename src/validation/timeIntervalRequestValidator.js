@@ -75,19 +75,21 @@ module.exports.deleteTimeIntervalValidators = [
 module.exports.updateTimeIntervalValidator = [
     body('updateTime').exists().isArray({min: 1, max: 5}).withMessage('updateTime must be an array'),
     body("updateTime.*").isObject().withMessage("must be an object"),
-    body("updateTime.*.to").exists().custom(isTimeEnum).withMessage(""),
-    body("updateTime.*.from").exists().custom(isTimeEnum).withMessage("")
+    body("updateTime.*.to").exists().custom(isTimeEnum.bind(null, "to")),
+    body("updateTime.*.from").exists().custom(isTimeEnum.bind(null, "from"))
     ,(req, res, next) => {
-        console.log("inside validator")
         const errors = validationResult(req);
-        if (!errors.isEmpty())
+        if (!errors.isEmpty()) {
+            console.log(errors);
             return res.status(400).json({error: errors.array()[0].msg});
+        }
         next();
     }
 ];
 
-function isTimeEnum(value) {
+function isTimeEnum(field, value) {
     if (!timeIntervalSymbols.propertyIsEnumerable(value)) {
-        throw new Error(`value at index: ${value} is not a valid timeInterval`);
+        throw new Error(`value in '${field}' as ${value} is not a valid timeInterval`);
     }
+    return true;
 }
