@@ -66,7 +66,7 @@ async function updateTimeInterval(request) {
     }
 }
 
-async function deleteTimeIntervals(req) {
+async function deleteTimeIntervals(request) {
     try {
         const timesToRemove = request.body.times;
 
@@ -85,7 +85,7 @@ async function deleteTimeIntervals(req) {
         }
 
         // Remove times from pillsTimeSlots arrays within each day object
-        document.days.forEach(day => {
+        document.medicineRoutine.days.forEach(day => {
             day.pillsTimeSlots = day.pillsTimeSlots.filter(slot => !timesToRemove.includes(slot.time));
         });
 
