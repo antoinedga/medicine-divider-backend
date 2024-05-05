@@ -6,7 +6,7 @@ const helmet = require('helmet')
 const bodyParser = require('body-parser')
 const connectDB = require('./src/configs/mongodb.connection');
 const limiter= require('./src/configs/rate.limiter')
-const indexRouter = require('./src/routes/index');
+const indexRouter = require('./src/routes/medical');
 const app = express();
 
 app.use(helmet());

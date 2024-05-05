@@ -1,7 +1,7 @@
-const MedicineDividerUserSchema = require("../models/medicineDividerUser")
+const MedicineDividerUserSchema = require("../../../models/medicineDividerUser")
 const MONGO_FILTER = "id medicineRoutine.timeIntervals"
-const timeIntervalEnum = require("../utils/timeIntervalEnum");
-const {sortPillsTimeSlots} = require("../utils/timeIntervalEnum");
+const timeIntervalEnum = require("../../../utils/timeIntervalEnum");
+const {sortPillsTimeSlots} = require("../../../utils/timeIntervalEnum");
 async function getTimeInterval(userId) {
     try {
         let document = await MedicineDividerUserSchema.findOne({id: userId}, MONGO_FILTER).exec();
@@ -74,7 +74,7 @@ async function deleteTimeIntervals(request) {
         const userId = decodedToken.payload.sub;
         let document = await MedicineDividerUserSchema.findOne({id: userId}, null, null).exec();
 
-        // Remove times from medicineRoutine.timeIntervals
+        // Remove times from routineRoutes.timeIntervals
         for (let i = 0; i < document.medicineRoutine.timeIntervals.length; i++) {
             const timeInterval = document.medicineRoutine.timeIntervals[i];
             if (timesToRemove.includes(timeInterval)) {
@@ -136,7 +136,7 @@ async function updateTimeIntervals(request) {
                 return interval;
             });
 
-            // Update timeIntervals array in medicineRoutine
+            // Update timeIntervals array in routineRoutes
             document.medicineRoutine.timeIntervals = existingTimeIntervals;
 
             // Update pillsTimeSlots for each day

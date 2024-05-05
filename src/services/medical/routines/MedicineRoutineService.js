@@ -1,5 +1,5 @@
-const MedicineDividerUserSchema = require("../../models/medicineDividerUser")
-const getDayToIndexUtil = require("../../utils/dayUtil")
+const MedicineDividerUserSchema = require("../../../models/medicineDividerUser")
+const getDayToIndexUtil = require("../../../utils/dayUtil")
 async function getUserMedicineRoutine(userId) {
     try {
         let docs = await MedicineDividerUserSchema.findOne({ id: userId }).exec();
@@ -69,6 +69,10 @@ async function addPillToRoutine(request) {
             msg: "ERROR from Database"
         }
     }
+}
+
+async function deletePillFromRoutine(request) {
+
 }
 
 module.exports = {getUserMedicineRoutine, addPillToRoutine}

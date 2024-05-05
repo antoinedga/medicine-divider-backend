@@ -1,10 +1,10 @@
 var express = require('express');
 var router = express.Router();
-const auth0CheckJwt = require("../../configs/auth0CheckJwt");
-const authErrorHandler = require("../../utils/authErrorHandlerUtil");
+const auth0CheckJwt = require("../../../configs/auth0CheckJwt");
+const authErrorHandler = require("../../../utils/authErrorHandlerUtil");
 
 const VIEWER_PATH = "/viewer/requests";
-const CONSENT_MESSAGE = require("../../utils/consentMessageUtil")
+const CONSENT_MESSAGE = require("../../../utils/consentMessageUtil")
 
 router.get(VIEWER_PATH, async function(req,res) {
 

@@ -1,12 +1,12 @@
 var request = require( 'supertest');
 var express = require ('express');
-var router= require('../../src/routes/medicineRoutine/medicineRoutine');
+var router= require('../../src/routes/medical/routineRoutes/medicineRoutine');
 
 
 const app = new express();
 app.use('/', router);
 
-describe('To Test medicineRoutine Route for Days', function () {
+describe('To Test routineRoutes Route for Days', function () {
     test.each([
         {path: "monday"},
         {path: "Monday"},
@@ -54,7 +54,7 @@ describe('To Test medicineRoutine Route for Days', function () {
 
 })
 
-describe('To Test medicineRoutine Route for Days and interval', function () {
+describe('To Test routineRoutes Route for Days and interval', function () {
 
     test.each([
         {path: "monday", interval: 1},
