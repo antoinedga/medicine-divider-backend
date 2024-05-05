@@ -14,25 +14,27 @@ function checkForDuplicatesTimes(array) {
     return false
 }
 
+function checkTimesLengthIsEnumAndDuplicates(value) {
+    if (value.length > 10) {
+        throw new Error('cannot send more than 10 intervals');
+    }
+    // valid enum timeInterval
+    for(let i = 0; i < value.length; i++) {
+        if (!timeIntervalSymbols.propertyIsEnumerable(value[i])) {
+            throw new Error(`value at index: ${i} is not a valid timeInterval`);
+        }
+    }
+
+    // duplicate check
+    if (checkForDuplicatesTimes(value)) {
+        throw new Error("newTime contains duplicate timeIntervals")
+    }
+
+    return true;
+}
+
 module.exports.newTimeIntervalValidators = [
-    body('times').exists().custom( value => {
-        if (value.length > 10) {
-            throw new Error('cannot send more than 10 intervals');
-        }
-        // valid enum timeInterval
-        for(let i = 0; i < value.length; i++) {
-            if (!timeIntervalSymbols.propertyIsEnumerable(value[i])) {
-                throw new Error(`value at index: ${i} is not a valid timeInterval`);
-            }
-        }
-
-        // duplicate check
-        if (checkForDuplicatesTimes(value)) {
-            throw new Error("newTime contains duplicate timeIntervals")
-        }
-
-        return true;
-    }),
+    body('times').exists().trim().escape().custom(checkTimesLengthIsEnumAndDuplicates),
     (req, res, next) => {
         console.log("inside validator for time")
         const errors = validationResult(req);
@@ -44,24 +46,7 @@ module.exports.newTimeIntervalValidators = [
 ]
 
 module.exports.deleteTimeIntervalValidators = [
-    body('times').exists().custom( value => {
-        if (value.length > 10) {
-            throw new Error('cannot send more than 10 intervals');
-        }
-        // valid enum timeInterval
-        for(let i = 0; i < value.length; i++) {
-            if (!timeIntervalSymbols.propertyIsEnumerable(value[i])) {
-                throw new Error(`value at index: ${i} is not a valid timeInterval`);
-            }
-        }
-
-        // duplicate check
-        if (checkForDuplicatesTimes(value)) {
-            throw new Error("removeInterval contains duplicate timeIntervals")
-        }
-
-        return true;
-    }),
+    body('times').exists().trim().escape().custom(checkTimesLengthIsEnumAndDuplicates),
     (req, res, next) => {
         console.log("inside validator for time")
         const errors = validationResult(req);
@@ -75,8 +60,8 @@ module.exports.deleteTimeIntervalValidators = [
 module.exports.updateTimeIntervalValidator = [
     body('updateTime').exists().isArray({min: 1, max: 5}).withMessage('updateTime must be an array'),
     body("updateTime.*").isObject().withMessage("must be an object"),
-    body("updateTime.*.to").exists().custom(isTimeEnum.bind(null, "to")),
-    body("updateTime.*.from").exists().custom(isTimeEnum.bind(null, "from"))
+    body("updateTime.*.to").exists().trim().escape().custom(isTimeEnum.bind(null, "to")),
+    body("updateTime.*.from").exists().trim().escape().custom(isTimeEnum.bind(null, "from"))
     ,(req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
