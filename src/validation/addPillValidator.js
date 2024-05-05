@@ -15,15 +15,14 @@ const containsOnlyAll = (value) => {
 };
 
 // Custom validation function to validate individual days array
-const isValidDaysArray = (value) => {
+const isValidDaysArray = (value, req) => {
     // If the array contains only the value "all", override it with all days
-    if (containsOnlyAll(value)) {
+    if (containsOnlyAll(value.days)) {
         // Replace the array with all days (Monday to Sunday)
-        return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        value.days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     }
-
     // Otherwise, return the original array
-    return value;
+    return true;
 };
 
 const isValidTime = value => {
@@ -32,7 +31,8 @@ const isValidTime = value => {
 
 module.exports = addPillValidator = [
     body('pillsToAdd').isArray({min: 1, max: 5}).withMessage('pillsToAdd must be an array'),
-    body('pillsToAdd.*.days').isArray({min: 1, max: 7}).custom(isValidDaysArray).withMessage('days must be an array'),
+    // this will be for if the days array is length one and if its 'all' this is ti modify the request
+    body('pillsToAdd.*').custom(isValidDaysArray),
     body('pillsToAdd.*.days.*').custom(isValidDayName).withMessage('Invalid day name'),
 
     body('pillsToAdd.*.times').isArray().withMessage('times must be an array'),
@@ -44,6 +44,7 @@ module.exports = addPillValidator = [
     ,(req, res, next) => {
         console.log("inside validator")
         const errors = validationResult(req);
+        console.log(errors);
         if (!errors.isEmpty())
             return res.status(400).json({error: errors.array()[0].msg});
         next();
