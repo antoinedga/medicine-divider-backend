@@ -12,7 +12,7 @@ async function getUserMedicineRoutine(userId) {
         return {
             success: true,
             code: 200,
-            medicineRoutine: docs
+            data: docs
         }
     }
     catch (error) {
@@ -25,54 +25,4 @@ async function getUserMedicineRoutine(userId) {
     }
 }
 
-async function addPillToRoutine(request) {
-    try {
-        const decodedToken = request.auth;
-        // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
-
-        let documents = await MedicineDividerUserSchema.findOne({ id: userId }).exec();
-        let pillsToAdd = request.body.pillsToAdd;
-
-        let dayRoutine = null;
-        let numberOfAdded = 0;
-        pillsToAdd.forEach(pillRequest => {
-
-            pillRequest.days.forEach(day => {
-
-                let dayIndex = getDayToIndexUtil.getDayToIndex(day);
-                dayRoutine = documents.medicineRoutine.days[dayIndex];
-                dayRoutine.pillsTimeSlots.forEach(timeSlot=> {
-
-                    if (pillRequest.times.includes(timeSlot.time)) {
-                        timeSlot.pills.push(
-                        MedicineDividerUserSchema.createPill(pillRequest.pill.name,
-                            pillRequest.pill.dosage, null, null))
-                        numberOfAdded++;
-                    }
-                })
-            })
-        });
-        let result = await documents.save();
-        console.log('Document updated successfully:', result);
-        return {
-            success: true,
-            code: 201,
-            msg: `successfully updated, added ${numberOfAdded} pill${numberOfAdded >= 2 ? "s" : ""} to routine`
-        }
-    }
-    catch (error) {
-        console.log(error)
-        return {
-            success: false,
-            code: 400,
-            msg: "ERROR from Database"
-        }
-    }
-}
-
-async function deletePillFromRoutine(request) {
-
-}
-
-module.exports = {getUserMedicineRoutine, addPillToRoutine}
+module.exports = {getUserMedicineRoutine}
