@@ -25,7 +25,7 @@ router.post(`${VIEWER_PATH}/:requestId/accept`, async function(req, res) {
 router.get(`${VIEWER_PATH}/:requestId/consent`, async function(req, res) {
 
 });
-router.patch(`${VIEWER_PATH}/:requestId`, async function(req, res) {
+router.patch(`${VIEWER_PATH}/:requestId/consent`, async function(req, res) {
 
 });
 
