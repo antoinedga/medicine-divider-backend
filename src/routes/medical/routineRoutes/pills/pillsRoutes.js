@@ -11,6 +11,11 @@ router.post(PILL_PATH, auth0CheckJwt, addPillValidator, async function(req, res)
     return res.status(result.code).send(result);
 });
 
+router.delete(PILL_PATH, auth0CheckJwt, async function(req, res) {
+    let result = await pillsService.deletePillFromRoutineByAllOccurrence(req);
+    return res.status(result.code).send(result);
+});
+
 router.get(PILL_PATH + "/names", auth0CheckJwt, async function (req, res) {
     let result = await pillsService.getAllPillsInRoutine(req);
     return res.status(result.code).send(result);

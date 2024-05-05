@@ -50,6 +50,7 @@ async function addPillToRoutine(request) {
 
 async function deletePillFromRoutineByAllOccurrence(request) {
     try {
+        let toDelete = request.body.toDelete;
         const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
@@ -57,15 +58,30 @@ async function deletePillFromRoutineByAllOccurrence(request) {
         let document = await MedicineDividerUserSchema.findOne({ id: userId }).exec();
 
         let days = document.medicineRoutine.days;
+        let numberOfDeletes = 0;
         days.forEach(day => {
-            day.pillsTimeSlots(individualPillTimeSlot => {
-
-            })
+            day.pillsTimeSlots.forEach(individualPillTimeSlot => {
+                individualPillTimeSlot.pills =
+                    individualPillTimeSlot.pills.filter(pill => {
+                        let result = pill.name !== toDelete;
+                        if(!result) {
+                            numberOfDeletes++;
+                        }
+                        return result;
+                    });
+            });
         });
 
+
+        return {
+            success: true,
+            code: 200,
+            msg: `Successfully removed ${numberOfDeletes}`,
+            data: document
+        }
     }
     catch (error) {
-        console.debug(error)
+        console.info(error)
         console.info("ERROR IN PILL SERVICE");
         return {
             success: false,
