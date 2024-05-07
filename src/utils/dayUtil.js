@@ -25,11 +25,26 @@ function getDayToIndexString(day) {
     }
 
 }
+
 const VALID_LONG_DAYS_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
 const VALID_SHORT_DAYS_NAMES = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+const isValidDayName = value => {
+    // Convert the input value to lowercase for case-insensitive comparison
+    const lowercaseValue = value.toLowerCase();
+    // Check if the lowercase value is included in either the full or shorthand day names array
+    return VALID_LONG_DAYS_NAMES.includes(lowercaseValue) || VALID_SHORT_DAYS_NAMES.includes(lowercaseValue);
+};
+
+const containsOnlyAll = (value) => {
+    return Array.isArray(value) && value.length === 1 && value[0] === 'all';
+};
 
 module.exports = {
     getDayToIndexString,
     VALID_SHORT_DAYS_NAMES,
-    VALID_LONG_DAYS_NAMES
+    VALID_LONG_DAYS_NAMES,
+    isValidDayName,
+    containsOnlyAll
 };

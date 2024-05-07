@@ -1,5 +1,5 @@
 const MedicineDividerUserSchema = require("../../../models/medicineDividerUser");
-const getDayToIndexUtil = require("../../../utils/dayUtil");
+const {getDayToIndexString} = require("../../../utils/dayUtil");
 
 
 async function addPillToRoutine(request) {
@@ -8,7 +8,7 @@ async function addPillToRoutine(request) {
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
 
-        let documents = await MedicineDividerUserSchema.findOne({ id: userId }).exec();
+        let documents = await MedicineDividerUserSchema.findOne({ id: userId }, null, null).exec();
         let pillsToAdd = request.body.pillsToAdd;
 
         let dayRoutine = null;
@@ -97,11 +97,38 @@ async function deletePillFromRoutineByDays(request) {
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
 
-        let document = await MedicineDividerUserSchema.findOne({ id: userId }).exec();
+        let document = await MedicineDividerUserSchema.findOne({ id: userId }, null, null).exec();
 
+        let data = request.body;
+        let index = null;
+        let target = null;
+        let numberOfDeletes = 0;
+        data.days.forEach(day => {
+
+            index = getDayToIndexString(day)
+            target = document.medicineRoutine.days[index];
+
+            target.pillsTimeSlots.forEach(individualPillTimeSlot => {
+                individualPillTimeSlot.pills =
+                    individualPillTimeSlot.pills.filter(pill => {
+                        let result = pill.name !== data.pill;
+                        if (!result) {
+                            numberOfDeletes++;
+                        }
+                        return result;
+                    });
+            });
+        });
+        document = await document.save();
+        return {
+            success: true,
+            code: 200,
+            msg: `Successfully removed ${numberOfDeletes}`,
+            data: document
+        }
     }
     catch (error) {
-        console.debug(error)
+        console.log(error)
         console.info("ERROR IN PILL SERVICE");
         return {
             success: false,

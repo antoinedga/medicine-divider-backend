@@ -1,18 +1,6 @@
 const {body, validationResult } = require('express-validator')
 const { timeIntervalAsArray} = require("../utils/timeIntervalEnum");
-const {VALID_LONG_DAYS_NAMES, VALID_SHORT_DAYS_NAMES} = require("../utils/dayUtil")
-
-
-const isValidDayName = value => {
-    // Convert the input value to lowercase for case-insensitive comparison
-    const lowercaseValue = value.toLowerCase();
-    // Check if the lowercase value is included in either the full or shorthand day names array
-    return VALID_LONG_DAYS_NAMES.includes(lowercaseValue) || VALID_SHORT_DAYS_NAMES.includes(lowercaseValue);
-};
-// Custom validation function to check if the array contains only the value "all"
-const containsOnlyAll = (value) => {
-    return Array.isArray(value) && value.length === 1 && value[0] === 'all';
-};
+const {isValidDayName, containsOnlyAll} = require("../utils/dayUtil")
 
 // Custom validation function to validate individual days array
 const isValidDaysArray = (value, req) => {
