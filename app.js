@@ -7,9 +7,11 @@ const bodyParser = require('body-parser')
 const connectDB = require('./src/configs/mongodb.connection');
 const limiter= require('./src/configs/rate.limiter')
 const indexRouter = require('./src/routes/medical');
+const usersRouter = require("./src/routes/usersRoutes");
+
 const app = express();
 
-app.use(helmet());
+//app.use(helmet());
 app.disable('x-powered-by');
 app.use(limiter);
 app.use(logger('common'));
@@ -19,6 +21,7 @@ app.use(bodyParser.json());
 connectDB();
 
 app.use('/',indexRouter);
+app.use("/api",usersRouter)
 
 const port = process.env.PORT || 8080; // process.env.port is Heroku's port if you choose to deploy the app there
 app.listen(port, () => console.log(`Server up and running on port ${port} !`));

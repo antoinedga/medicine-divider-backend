@@ -10,15 +10,16 @@ router.post("/register", async (req, res) => {
     res.send(result)
 })
 
-router.post('/auth/callback', express.urlencoded({ extended: false }), (req, res) =>
-    res.oidc.callback({
-        redirectUri: 'http://localhost:3000/callback',
-    })
-);
+router.post('/auth/callback', express.urlencoded({ extended: false }), async (req, res) => {
+    console.log("received call from auth0: " + JSON.stringify(req.body))
+    let result = await userService.createUser(req);
+    return res.status(result.code).send(result);
+});
+
 router.get("/auth/callback", async (req, res) => {
     const accessToken = req.oidc.accessToken;
     const idToken = req.oidc.idToken;
     res.body({idToken, accessToken}).send();
-})
+});
 
 module.exports = router;

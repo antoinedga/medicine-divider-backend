@@ -1,32 +1,15 @@
 const MedicineDividerUserSchema = require("../models/medicineDividerUser")
 const {managementClient, authenticationClient} = require("../configs/auth0client")
 
-async function createUser(request, response) {
+async function createUser(request) {
     try {
-        let email = request.body.email;
-        let emailExist = await doesEmailExist(email)
-
-        if (emailExist) {
-            return {
-                msg: "Email already in use",
-                code: 400,
-                success: false
-            }
-        }
-
-        // Create user in Auth0 using email as username
-        const createdUser = await authenticationClient.database.signUp({
-            connection: 'Username-Password-Authentication',
-            email: email,
-            username: email, // Use email as username
-            password: request.body.password,
-        });
-
+        let data = request.body;
+        console.log("received: " + data)
         let medicineUserSchema = new MedicineDividerUserSchema();
-        medicineUserSchema.id = createdUser.data['_id'];
-        medicineUserSchema.name = request.body.name;
-        medicineUserSchema.email = request.body.email;
-        medicineUserSchema.dateOfBirth = request.body.dateOfBirth;
+        medicineUserSchema.id = data.userId;
+        medicineUserSchema.name = data.firstName + " " + data.lastName;
+        medicineUserSchema.email = data.email;
+        medicineUserSchema.dateOfBirth = Date.parse(data.dateOfBirth);
 
         let result = await medicineUserSchema.save();
         console.log("DB " + result);
@@ -49,8 +32,8 @@ async function createUser(request, response) {
 async function doesEmailExist(email) {
     let usersByEmail = await managementClient.usersByEmail.getByEmail({email: email});
     return usersByEmail && usersByEmail.data.length > 0;
-
 }
+
 
 module.exports = {createUser};
 
