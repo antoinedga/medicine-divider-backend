@@ -8,7 +8,10 @@ const userRoutes = require("../usersRoutes")
 
 const API_VERSION_PATH = process.env.API_VERSION_PATH
 const API_ROUTINE_PATH = process.env.API_ROUTINE_PATH;
+
+const API_VIEW_PATH = process.env.API_VIEW_PATH
 const API_VIEWER_PATH = process.env.API_VIEWER_PATH;
+
 function handleAuthError(err, req, res, next) {
     // If authentication error (token expired, invalid token, etc.)
     if (err.name === 'UnauthorizedError' || err.name === 'InvalidTokenError') {
