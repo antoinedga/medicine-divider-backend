@@ -189,7 +189,7 @@ async function getAllPillsInRoutine(request) {
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
 
-        let document = await MedicineDividerUserSchema.findOne({id: userId}, null, null).exec();
+        let document = await MedicineDividerUserSchema.findOne({id: userId}, null, {lean: true}).exec();
 
         if (document == null) {
             console.error(`ERROR: user with id: ${userId} from auth0 is valid but no record in database!`)

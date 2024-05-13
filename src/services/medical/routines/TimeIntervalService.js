@@ -4,14 +4,16 @@ const timeIntervalEnum = require("../../../utils/timeIntervalEnum");
 const {sortPillsTimeSlots} = require("../../../utils/timeIntervalEnum");
 async function getTimeInterval(userId) {
     try {
-        let document = await MedicineDividerUserSchema.findOne({id: userId}, MONGO_FILTER).exec();
+        let document = await MedicineDividerUserSchema.findOne({id: userId}, MONGO_FILTER, {
+            lean: true
+        }).exec();
         return {
             success: true,
             code: 200,
             data: document.medicineRoutine.timeIntervals
         }
     } catch (e) {
-        console.log(e)
+        console.error(e)
         return {
             success: false,
             code: 400,

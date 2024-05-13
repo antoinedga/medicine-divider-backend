@@ -16,5 +16,12 @@ router.get("", async function (req, res) {
     return res.status(result.success ? 200 : 400).send(result)
 
 });
+router.get("/days/:day", async function(req,res) {
+    const decodedToken = req.auth;
+    // Extract user ID from the decoded JWT token's payload
+    const userId = decodedToken.payload.sub;
+    let result = await medicineRoutineService.getUserMedicineRoutineByDay(userId, req.params.day);
+    return res.status(result.success ? 200 : 400).send(result)
+});
 
 module.exports = router;

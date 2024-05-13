@@ -1,14 +1,16 @@
 const MedicineDividerUserSchema = require("../../../models/medicineDividerUser")
-const getDayToIndexUtil = require("../../../utils/dayUtil")
+const {getDayToIndexString} = require("../../../utils/dayUtil")
 async function getUserMedicineRoutine(userId) {
     try {
-        let docs = await MedicineDividerUserSchema.findOne({ id: userId }).exec();
-        if (docs == null || docs.length === 0)
+        let docs = await MedicineDividerUserSchema.findOne({ id: userId }, null, {lean: true}).exec();
+        if (docs == null) {
+            console.error("Invalid UserId with Valid token")
             return {
                 success: false,
                 code: 400,
                 msg: "no account with that email"
             }
+        }
         return {
             success: true,
             code: 200,
@@ -25,4 +27,35 @@ async function getUserMedicineRoutine(userId) {
     }
 }
 
-module.exports = {getUserMedicineRoutine}
+async function getUserMedicineRoutineByDay(userId, day) {
+    try {
+        let index = getDayToIndexString(day);
+        let docs = await MedicineDividerUserSchema.findOne({ id: userId }, null,{
+            lean: true
+        }).exec();
+        if (docs == null) {
+            console.error("Invalid UserId with Valid token")
+            return {
+                success: false,
+                code: 400,
+                msg: "no account with that userId"
+            }
+        }
+        return {
+            success: true,
+            code: 200,
+            data: docs.medicineRoutine.days[index]
+
+        }
+    }
+    catch (error) {
+        console.log(error)
+        return {
+            success: false,
+            code: 400,
+            msg: "ERROR from Database"
+        }
+    }
+}
+
+module.exports = {getUserMedicineRoutine,getUserMedicineRoutineByDay}
