@@ -6,8 +6,11 @@ const timeIntervalService = require("../../../../services/medical/routines/TimeI
 const authErrorHandler = require("../../../../utils/authErrorHandlerUtil")
 const TIME_PATH = "/time";
 
+router.use(auth0CheckJwt);
+router.use(authErrorHandler)
+
 // get time intervals
-router.get(TIME_PATH, auth0CheckJwt, async function (req, res) {
+router.get(TIME_PATH, async function (req, res) {
     const decodedToken = req.auth;
     // Extract user ID from the decoded JWT token's payload
     const userId = decodedToken.payload.sub;
@@ -16,23 +19,21 @@ router.get(TIME_PATH, auth0CheckJwt, async function (req, res) {
 });
 
 // ADD time interval
-router.post(TIME_PATH, auth0CheckJwt, newTimeIntervalValidators, async function(req, res) {
+router.post(TIME_PATH, newTimeIntervalValidators, async function(req, res) {
     let result = await timeIntervalService.addTimeInterval(req);
     return res.status(result.code).send(result);
 });
 
 // Delete time intervals
-router.delete(TIME_PATH, auth0CheckJwt, deleteTimeIntervalValidators, async function (req, res) {
+router.delete(TIME_PATH, deleteTimeIntervalValidators, async function (req, res) {
     let result = await timeIntervalService.deleteTimeIntervals(req);
     return res.status(result.code).send(result);
 });
 
 // update time intervals
-router.patch(TIME_PATH, auth0CheckJwt, updateTimeIntervalValidator, async function (req, res) {
+router.patch(TIME_PATH, updateTimeIntervalValidator, async function (req, res) {
     let result = await timeIntervalService.updateTimeIntervals(req);
     return res.status(result.code).send(result);
 });
-
-router.use(authErrorHandler)
 
 module.exports = router;

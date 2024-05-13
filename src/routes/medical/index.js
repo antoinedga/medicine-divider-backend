@@ -12,17 +12,6 @@ const API_ROUTINE_PATH = process.env.API_ROUTINE_PATH;
 const API_VIEW_PATH = process.env.API_VIEW_PATH
 const API_VIEWER_PATH = process.env.API_VIEWER_PATH;
 
-function handleAuthError(err, req, res, next) {
-    // If authentication error (token expired, invalid token, etc.)
-    if (err.name === 'UnauthorizedError' || err.name === 'InvalidTokenError') {
-        // Customize the response here
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    // For other errors, pass them to the default error handler
-    next(err);
-}
-
-router.use(handleAuthError);
 
 router.use(userRoutes);
 router.use(API_VERSION_PATH + API_ROUTINE_PATH, timeIntervalRoutes);
