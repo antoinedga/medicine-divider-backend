@@ -1,4 +1,4 @@
-const ViewerRequest = require("../../../models/viewRequestSchema");
+const ViewerRequest = require("../../../models/viewRequestModel");
 
 async function getAllUserCanView(request) {
     try {

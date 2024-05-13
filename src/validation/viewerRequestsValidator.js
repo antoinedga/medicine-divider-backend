@@ -1,5 +1,5 @@
 const {query,   validationResult, body} = require("express-validator");
-
+const VIEWER_REQUEST_STATUS = ["pending", "accepted"];
 const validateEmailQueryParam = (req, res, next) => {
     // Check if there are any query parameters other than 'email'
     const allowedParams = ['email'];
@@ -13,6 +13,12 @@ const validateEmailQueryParam = (req, res, next) => {
     // If all query parameters are valid, move to the next middleware
     next();
 };
+
+module.exports.viewerGetValidator = [
+    query("status").optional().trim().escape()
+        .isString()
+        .isIn(VIEWER_REQUEST_STATUS)
+]
 
 module.exports.viewerSearchValidator = [
     validateEmailQueryParam,

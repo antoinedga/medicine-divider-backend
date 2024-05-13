@@ -1,6 +1,14 @@
-const MedicineDividerUserSchema = require("../../../models/medicineDividerUser")
-const ViewerRequest = require("../../../models/viewRequestSchema");
+const MedicineDividerUserSchema = require("../../../models/medicineRoutineUserModel")
+const ViewerRequest = require("../../../models/viewRequestModel");
 
+async function getAllViewersRoot(request) {
+    if ('status' in request.query) {
+        return await getAllViewerByStatus(request);
+    }
+    else {
+        return await  getAllViewers(request);
+    }
+}
 
 async function getAllViewers(request) {
     try {
@@ -10,7 +18,6 @@ async function getAllViewers(request) {
         const [provider, id] = userId.split("|");
         let result = await ViewerRequest.find({
             sender: id,
-            status: "PENDING"
         }, "-sender -__v -createdAt -updatedAt").lean()
             .populate("receiver", "name email").exec();
         if (result != null && result.length > 0) {
@@ -36,6 +43,44 @@ async function getAllViewers(request) {
             msg: "INTERNAL SERVER ERROR"
         }
     }
+}
+
+async function getAllViewerByStatus(request) {
+    try {
+        const decodedToken = request.auth;
+        // Extract user ID from the decoded JWT token's payload
+        const userId = decodedToken.payload.sub;
+        const status = request.query.status
+        const [provider, id] = userId.split("|");
+        let result = await ViewerRequest.find({
+            sender: id,
+            status: status
+        }, "-sender -__v -createdAt -updatedAt").lean()
+            .populate("receiver", "name email").exec();
+
+        let formatted = result.map(doc => {
+            return {
+                id: doc._id,
+                name: doc.receiver.name,
+                email: doc.receiver.email
+            }
+        })
+
+        return {
+            success: true,
+            code: 200,
+            data: formatted
+        }
+    }
+    catch (error) {
+        console.error(error);
+        return {
+            success: false,
+            code: 500,
+            msg: "INTERNAL SERVER ERROR"
+        }
+    }
+
 }
 
 function generateConsentUrl(viewerRequestId) {
@@ -112,9 +157,10 @@ async function sendViewRequest(request) {
 }
 
 async function getViewerRequestById(request) {
-    let requestId = request.params.requestId;
-    console.log(requestId)
-    let viewerRequest = await ViewerRequest.findById(requestId, "-sender").lean().populate("receiver", "name email").exec();
+    let requestId = getParamRequestId(request);
+    let viewerRequest = await ViewerRequest
+        .findById(requestId, "-sender", {lean: true})
+        .populate("receiver", "name email").exec();
 
     if (viewerRequest === undefined || viewerRequest == null) {
         return {
@@ -146,9 +192,10 @@ async function getViewerRequestConsent(request) {
     const userId = decodedToken.payload.sub;
     const [provider, id] = userId.split("|");
 
-    let requestId = request.params.requestId;
-    console.log(requestId)
-    let viewerRequest = await ViewerRequest.findById(requestId, "-sender").lean().populate("receiver", "name email").exec();
+    let requestId = getParamRequestId(request);
+    let viewerRequest = await ViewerRequest
+        .findById(requestId, "-sender", {lean: true})
+        .populate("receiver", "name email").exec();
 
     if (viewerRequest === undefined || viewerRequest == null) {
         return {
@@ -171,6 +218,7 @@ async function getViewerRequestConsent(request) {
         success: true
     }
 }
+
 function acceptViewRequest(request) {
 
 }
@@ -183,44 +231,11 @@ function removeViewerFromAccount() {
 
 }
 
-async function getAllApprovedViewers(request) {
-    try {
-        const decodedToken = request.auth;
-        // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
-        const [provider, id] = userId.split("|");
-        let result = await ViewerRequest.find({
-            sender: id,
-            status: "ACCEPTED"
-        }, "-sender -__v -createdAt -updatedAt").lean()
-            .populate("receiver", "name email").exec();
-
-        let formatted = result.map(doc => {
-            return {
-                id: doc._id,
-                name: doc.receiver.name,
-                email: doc.receiver.email
-            }
-        })
-
-        return {
-            success: true,
-            code: 200,
-            data: formatted
-        }
-    }
-    catch (error) {
-        console.error(error);
-        return {
-            success: false,
-            code: 500,
-            msg: "INTERNAL SERVER ERROR"
-        }
-    }
-
+function getParamRequestId(request) {
+    return request.params.requestId;
 }
 
-module.exports = {getAllViewers, getViewerRequestById, searchForUserByEmail, sendViewRequest, getAllApprovedViewers}
+module.exports = {getAllViewersRoot, getViewerRequestById, searchForUserByEmail, sendViewRequest}
 
 
 

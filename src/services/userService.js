@@ -1,4 +1,4 @@
-const MedicineDividerUserSchema = require("../models/medicineDividerUser")
+const MedicineDividerUserSchema = require("../models/medicineRoutineUserModel")
 const {managementClient, authenticationClient} = require("../configs/auth0client")
 
 async function createUser(request) {

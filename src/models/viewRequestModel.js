@@ -41,7 +41,6 @@ const ViewerRequestSchema = new Schema({
         timestamps: true,
     });
 
-ViewerRequestSchema.index({ sender: 1, receiver: 1 }, { unique: true });
 
 let model = mongoose.model("ViewRequest", ViewerRequestSchema)
 

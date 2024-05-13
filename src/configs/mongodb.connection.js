@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const MedicineDividerUserSchema = require("../models/medicineDividerUser")
-const ViewRequest = require("../models/viewRequestSchema")
+const MedicineDividerUserSchema = require("../models/medicineRoutineUserModel")
+const ViewRequest = require("../models/viewRequestModel")
 const connectDB = async () => {
     try {
         const conn = await mongoose.connect(process.env.MONGO_DB_URL, {

@@ -1,10 +1,10 @@
-const MedicineDividerUserSchema = require("../../../models/medicineDividerUser")
+const MedicineRoutineUserModel = require("../../../models/medicineRoutineUserModel")
 const MONGO_FILTER = "id medicineRoutine.timeIntervals"
 const timeIntervalEnum = require("../../../utils/timeIntervalEnum");
 const {sortPillsTimeSlots} = require("../../../utils/timeIntervalEnum");
 async function getTimeInterval(userId) {
     try {
-        let document = await MedicineDividerUserSchema.findOne({id: userId}, MONGO_FILTER, {
+        let document = await MedicineRoutineUserModel.findOne({id: userId}, MONGO_FILTER, {
             lean: true
         }).exec();
         return {
@@ -26,7 +26,7 @@ async function addTimeInterval(request) {
     const decodedToken = request.auth;
     // Extract user ID from the decoded JWT token's payload
     const userId = decodedToken.payload.sub;
-    let document = await MedicineDividerUserSchema.findOne({id: userId}, null, null).exec();
+    let document = await MedicineRoutineUserModel.findOne({id: userId}, null, null).exec();
 
     let newTimeInterval = request.body.times;
     let dbIntervalSet = new Set(document.medicineRoutine.timeIntervals);
@@ -53,7 +53,7 @@ async function addTimeInterval(request) {
     timeIntervalEnum.sortTimeIntervals(document.medicineRoutine.timeIntervals)
     for (let i = 0; i < 7; i++) {
         for (let j = 0; j < newTimeInterval.length; j++) {
-            document.medicineRoutine.days[i].pillsTimeSlots.push(MedicineDividerUserSchema.createTimeInterval(newTimeInterval[j]));
+            document.medicineRoutine.days[i].pillsTimeSlots.push(MedicineRoutineUserModel.createTimeInterval(newTimeInterval[j]));
         }
     }
     sortPillsTimeSlots(document.medicineRoutine.days)
@@ -74,7 +74,7 @@ async function deleteTimeIntervals(request) {
         const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
-        let document = await MedicineDividerUserSchema.findOne({id: userId}, null, null).exec();
+        let document = await MedicineRoutineUserModel.findOne({id: userId}, null, null).exec();
 
         // Remove times from routineRoutes.timeIntervals
         for (let i = 0; i < document.medicineRoutine.timeIntervals.length; i++) {
@@ -115,7 +115,7 @@ async function updateTimeIntervals(request) {
         const userId = decodedToken.payload.sub;
         const timeIntervals = request.body.updateTime;
 
-        let document = await MedicineDividerUserSchema.findOne({id: userId}, null, null).exec();
+        let document = await MedicineRoutineUserModel.findOne({id: userId}, null, null).exec();
         let existingTimeIntervals = document.medicineRoutine.timeIntervals;
         let result = null;
 

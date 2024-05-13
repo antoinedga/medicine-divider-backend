@@ -1,4 +1,4 @@
-const MedicineDividerUserSchema = require("../../../models/medicineDividerUser");
+const MedicineRoutineUserModel = require("../../../models/medicineRoutineUserModel");
 const {getDayToIndexString, areDaysNameEqual} = require("../../../utils/dayUtil");
 
 
@@ -8,7 +8,7 @@ async function addPillToRoutine(request) {
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
 
-        let documents = await MedicineDividerUserSchema.findOne({ id: userId }, null, null).exec();
+        let documents = await MedicineRoutineUserModel.findOne({ id: userId }, null, null).exec();
         let pillsToAdd = request.body.pillsToAdd;
 
         let dayRoutine = null;
@@ -23,7 +23,7 @@ async function addPillToRoutine(request) {
 
                     if (pillRequest.times.includes(timeSlot.time)) {
                         timeSlot.pills.push(
-                            MedicineDividerUserSchema.createPill(pillRequest.pill.name,
+                            MedicineRoutineUserModel.createPill(pillRequest.pill.name,
                                 pillRequest.pill.dosage, null, null))
                         numberOfAdded++;
                     }
@@ -55,7 +55,7 @@ async function deletePillFromRoutineByAllOccurrence(request) {
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
 
-        let document = await MedicineDividerUserSchema.findOne({ id: userId }).exec();
+        let document = await MedicineRoutineUserModel.findOne({ id: userId }).exec();
 
         let days = document.medicineRoutine.days;
         let numberOfDeletes = 0;
@@ -97,7 +97,7 @@ async function deletePillFromRoutineByDays(request) {
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
 
-        let document = await MedicineDividerUserSchema.findOne({ id: userId }, null, null).exec();
+        let document = await MedicineRoutineUserModel.findOne({ id: userId }, null, null).exec();
 
         let data = request.body;
         let index = null;
@@ -144,7 +144,7 @@ async function deletePillFromRoutineByDayTime(request) {
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
         let data = request.body;
-        let document = await MedicineDividerUserSchema.findOne({ id: userId }).exec();
+        let document = await MedicineRoutineUserModel.findOne({ id: userId }).exec();
 
         let target = null;
         let index = null;
@@ -189,7 +189,7 @@ async function getAllPillsInRoutine(request) {
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
 
-        let document = await MedicineDividerUserSchema.findOne({id: userId}, null, {lean: true}).exec();
+        let document = await MedicineRoutineUserModel.findOne({id: userId}, null, {lean: true}).exec();
 
         if (document == null) {
             console.error(`ERROR: user with id: ${userId} from auth0 is valid but no record in database!`)

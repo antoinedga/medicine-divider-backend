@@ -1,8 +1,8 @@
-const MedicineDividerUserSchema = require("../../../models/medicineDividerUser")
+const MedicineRoutineUserModel = require("../../../models/medicineRoutineUserModel")
 const {getDayToIndexString} = require("../../../utils/dayUtil")
 async function getUserMedicineRoutine(userId) {
     try {
-        let docs = await MedicineDividerUserSchema.findOne({ id: userId }, null, {lean: true}).exec();
+        let docs = await MedicineRoutineUserModel.findOne({ id: userId }, null, {lean: true}).exec();
         if (docs == null) {
             console.error("Invalid UserId with Valid token")
             return {
@@ -30,7 +30,7 @@ async function getUserMedicineRoutine(userId) {
 async function getUserMedicineRoutineByDay(userId, day) {
     try {
         let index = getDayToIndexString(day);
-        let docs = await MedicineDividerUserSchema.findOne({ id: userId }, null,{
+        let docs = await MedicineRoutineUserModel.findOne({ id: userId }, null,{
             lean: true
         }).exec();
         if (docs == null) {
