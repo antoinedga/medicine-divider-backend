@@ -41,10 +41,17 @@ const containsOnlyAll = (value) => {
     return Array.isArray(value) && value.length === 1 && value[0] === 'all';
 };
 
+function areDaysNameEqual(dayOne, dayTwo) {
+    let indexOne = getDayToIndexString(dayOne);
+    let indexTwo = getDayToIndexString(dayTwo);
+    return indexOne === indexTwo
+}
+
 module.exports = {
     getDayToIndexString,
     VALID_SHORT_DAYS_NAMES,
     VALID_LONG_DAYS_NAMES,
     isValidDayName,
-    containsOnlyAll
+    containsOnlyAll,
+    areDaysNameEqual
 };

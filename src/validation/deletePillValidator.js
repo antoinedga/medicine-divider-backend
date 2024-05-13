@@ -2,7 +2,7 @@ const {body, validationResult } = require('express-validator')
 const {isValidDayName, containsOnlyAll, VALID_SHORT_DAYS_NAMES} = require("../utils/dayUtil")
 
 const allOccurrenceValidator = [
-    body("toDelete").exists().isString().trim().escape()
+    body("pill").exists().isString().trim().escape()
 ];
 
 const onCertainDaysValidator = [

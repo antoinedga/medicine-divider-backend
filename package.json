@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js",
+    "dev": "DEBUG=* nodemon app.js",
     "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage",
     "eslint": "eslint src --config .eslintrc.js"
   },

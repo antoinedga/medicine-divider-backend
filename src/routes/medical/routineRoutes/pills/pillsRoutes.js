@@ -26,6 +26,12 @@ router.delete(PILL_PATH + "/bydays", auth0CheckJwt, onCertainDaysValidator, asyn
     return res.status(result.code).send(result);
 });
 
+router.delete(PILL_PATH + "/bydaytime", auth0CheckJwt, onCertainDaysValidator, async function(req, res) {
+
+    let result = await pillsService.deletePillFromRoutineByDayTime(req);
+    return res.status(result.code).send(result);
+});
+
 router.get(PILL_PATH + "/names", auth0CheckJwt, async function (req, res) {
     let result = await pillsService.getAllPillsInRoutine(req);
     return res.status(result.code).send(result);

@@ -1,5 +1,5 @@
 const MedicineDividerUserSchema = require("../../../models/medicineDividerUser");
-const {getDayToIndexString} = require("../../../utils/dayUtil");
+const {getDayToIndexString, areDaysNameEqual} = require("../../../utils/dayUtil");
 
 
 async function addPillToRoutine(request) {
@@ -143,9 +143,33 @@ async function deletePillFromRoutineByDayTime(request) {
         const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
-
+        let data = request.body;
         let document = await MedicineDividerUserSchema.findOne({ id: userId }).exec();
 
+        let target = null;
+        let index = null;
+        let targetSlot = null;
+        let numberOfDeletes = 0;
+        data.days.forEach(day => {
+            index = getDayToIndexString(day);
+            target = document.medicineRoutine.days[index];
+            data.times.forEach(time => {
+                targetSlot = target.pillsTimeSlots.find(slot => areDaysNameEqual(slot.time,time));
+                targetSlot.pills = targetSlot.pills.filter(pill => {
+                    let result = (pill.name.localeCompare(data.pill.toLowerCase()) !== 0)
+                    if (!result)
+                        numberOfDeletes++;
+                    return result;
+                });
+            })
+        });
+        document = await document.save();
+        return {
+            success: true,
+            code: 200,
+            msg: `Deleted ${numberOfDeletes} Pill` + (numberOfDeletes > 0 ? 's' : ''),
+            data: document
+        }
     }
     catch (error) {
         console.debug(error)
