@@ -2,6 +2,8 @@
   "name": "medicine-divider-backend",
   "version": "0.0.0",
   "private": true,
+  "description": "Medical Record sharing and medicine routine hub",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "dev": "DEBUG=* nodemon app.js",
