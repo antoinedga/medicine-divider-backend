@@ -13,7 +13,7 @@ router.get("", async function (req, res) {
     // Extract user ID from the decoded JWT token's payload
     const userId = decodedToken.payload.sub;
     let result = await medicineRoutineService.getUserMedicineRoutine(userId);
-    return res.status(result.success ? 200 : 400).send(result)
+    return res.status(result.code).send(result)
 
 });
 router.get("/days/:day", async function(req,res) {
@@ -21,7 +21,7 @@ router.get("/days/:day", async function(req,res) {
     // Extract user ID from the decoded JWT token's payload
     const userId = decodedToken.payload.sub;
     let result = await medicineRoutineService.getUserMedicineRoutineByDay(userId, req.params.day);
-    return res.status(result.success ? 200 : 400).send(result)
+    return res.status(result.code).send(result)
 });
 
 module.exports = router;
