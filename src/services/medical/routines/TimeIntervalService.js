@@ -2,23 +2,16 @@ const MedicineRoutineUserModel = require("../../../models/medicineRoutineUserMod
 const MONGO_FILTER = "id medicineRoutine.timeIntervals"
 const timeIntervalEnum = require("../../../utils/timeIntervalEnum");
 const {sortPillsTimeSlots} = require("../../../utils/timeIntervalEnum");
+const MedicalResponse = require("../../../utils/medicalResponse")
 async function getTimeInterval(userId) {
     try {
         let document = await MedicineRoutineUserModel.findOne({id: userId}, MONGO_FILTER, {
             lean: true
         }).exec();
-        return {
-            success: true,
-            code: 200,
-            data: document.medicineRoutine.timeIntervals
-        }
+        return MedicalResponse.successWithDataOnly(document.medicineRoutine.timeIntervals, 200)
     } catch (e) {
         console.error(e)
-        return {
-            success: false,
-            code: 400,
-            msg: "ERROR IN GETTING TIME INTERVAL"
-        }
+        return MedicalResponse.internalServerError()
     }
 }
 
@@ -32,20 +25,12 @@ async function addTimeInterval(request) {
     let dbIntervalSet = new Set(document.medicineRoutine.timeIntervals);
     let length = newTimeInterval.length + dbIntervalSet.size;
     if (length > 10) {
-        return {
-            success: false,
-            code: 400,
-            msg: "cannot have more than 10 time Interval, currently at " + dbInterval.length
-        }
+        return MedicalResponse.error("cannot have more than 10 time Interval, currently at " + dbInterval.length, 400)
     }
 
     for (let i = 0; i < newTimeInterval.length; i++) {
         if (dbIntervalSet.has(newTimeInterval[i])) {
-            return {
-                success: false,
-                code: 400,
-                msg: "cannot insert duplicate time slot"
-            }
+            return MedicalResponse.error("cannot insert duplicate time slot", 400)
         }
         dbIntervalSet.add(newTimeInterval[i])
     }
@@ -60,11 +45,7 @@ async function addTimeInterval(request) {
 
 
     let result = await document.save();
-    return {
-        success: true,
-        code: 201,
-        data: result
-    }
+    return MedicalResponse.successWithDataOnly(result, 201)
 }
 
 async function deleteTimeIntervals(request) {

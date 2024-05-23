@@ -1,29 +1,18 @@
 const MedicineRoutineUserModel = require("../../../models/medicineRoutineUserModel")
 const {getDayToIndexString} = require("../../../utils/dayUtil")
+const MedicalResponse = require('../../../utils/medicalResponse')
 async function getUserMedicineRoutine(userId) {
     try {
         let docs = await MedicineRoutineUserModel.findOne({ id: userId }, null, {lean: true}).exec();
         if (docs == null) {
             console.error("Invalid UserId with Valid token")
-            return {
-                success: false,
-                code: 400,
-                msg: "no account with that email"
-            }
+            return MedicalResponse.error("no account with that email", 400)
         }
-        return {
-            success: true,
-            code: 200,
-            data: docs
-        }
+        return MedicalResponse.success(docs, null, 200)
     }
     catch (error) {
         console.log(error)
-        return {
-            success: false,
-            code: 400,
-            msg: "ERROR from Database"
-        }
+        return MedicalResponse.internalServerError();
     }
 }
 
@@ -50,11 +39,7 @@ async function getUserMedicineRoutineByDay(userId, day) {
     }
     catch (error) {
         console.log(error)
-        return {
-            success: false,
-            code: 400,
-            msg: "ERROR from Database"
-        }
+        return MedicalResponse.internalServerError();
     }
 }
 

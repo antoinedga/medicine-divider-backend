@@ -1,7 +1,11 @@
-const MedicineDividerUserSchema = require("../models/medicineRoutineUserModel")
-const {managementClient, authenticationClient} = require("../configs/auth0client")
+const mongoose = require("mongoose");
+const MedicineDividerUserSchema = require("../models/medicineRoutineUserModel");
+const ViewSystem = require("../models/viewSystemModel");
 
 async function createUser(request) {
+    // start mongo transaction
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
         let data = request.body;
         console.log("received: " + data)
@@ -14,6 +18,13 @@ async function createUser(request) {
         let result = await medicineUserSchema.save();
         console.log("DB " + result);
 
+        let viewingSystem = new ViewSystem();
+        viewingSystem.userId = result._id;
+        await viewingSystem.save();
+
+        // end transaction
+        await session.commitTransaction();
+        await session.endSession();
         return {
             msg: "User created successfully",
             success: true,
@@ -21,6 +32,8 @@ async function createUser(request) {
         };
     } catch (error) {
         console.log(error);
+        await session.abortTransaction();
+        await session.endSession();
         return {
             msg: "Error creating user",
             success: false,
