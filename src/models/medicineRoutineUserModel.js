@@ -51,6 +51,7 @@ function arrayLimit(val) {
 }
 
 const MedicineDividerUserSchema = new Schema({
+    _id: {type: String, required: true},
     id: { type: String, required: true, unique: true }, // Use Auth0 user_id as ID
     name: { type: String, required: true },
     email: { type: String, required: true, index: true, unique: true },

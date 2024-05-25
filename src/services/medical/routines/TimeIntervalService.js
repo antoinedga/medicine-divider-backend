@@ -19,8 +19,13 @@ async function addTimeInterval(request) {
     const decodedToken = request.auth;
     // Extract user ID from the decoded JWT token's payload
     const userId = decodedToken.payload.sub;
-    let document = await MedicineRoutineUserModel.findOne({id: userId}, null, null).exec();
+    let document = await MedicineRoutineUserModel
+        .findOne({id: userId}, null, null).exec();
 
+    if(!document) {
+        console.error("No user with userId")
+        return MedicalResponse.error("No User with userId", 400)
+    }
     let newTimeInterval = request.body.times;
     let dbIntervalSet = new Set(document.medicineRoutine.timeIntervals);
     let length = newTimeInterval.length + dbIntervalSet.size;

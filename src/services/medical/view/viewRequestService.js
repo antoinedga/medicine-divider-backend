@@ -23,12 +23,12 @@ async function sendRequest(request) {
         const userId = decodedToken.payload.sub;
         const [provider, authId] = userId.split('|');
 
-        let receiverDoc = MedicineRoutineUser.findOne({email: request.body.email}, "id name email", {lean: true}).exec();
+        let receiverDoc = await MedicineRoutineUser.findOne({email: request.body.email}, "id name email", {lean: true}).exec();
         if (receiverDoc == null) {
             return MedicalResponse.error("No Such Users to Send Request", 400);
         }
         // check if this user has a pending request from sender already
-        existingRequest = ViewRequestModel.findOne({
+        existingRequest = await ViewRequestModel.findOne({
             receiver: receiverDoc._id,
             sender: authId
         }).sort({updatedAt: -1}).lean().exec();
@@ -40,8 +40,9 @@ async function sendRequest(request) {
         // create a new Viewer Request
         const viewerRequest = ViewRequestModel.createNewViewRequest(authId, receiverDoc._id);
         await viewerRequest.save();
-        return MedicalResponse.success(null, "Viewer Request Sent", 201);
+        return MedicalResponse.success( null, "Viewer Request Sent", 201);
     } catch (error) {
+        console.log(error)
         return MedicalResponse.internalServerError()
     }
 }
@@ -54,7 +55,10 @@ async function getViewerRequestById(request) {
         const [provider, authId] = userId.split('|');
         const requestId = request.params.requestId;
 
-        let viewerRequest = await ViewRequestModel.findById(requestId).lean().exec();
+        let viewerRequest = await ViewRequestModel.findById(requestId)
+            .populate('sender', 'name email')
+            .populate("receiver", 'name email')
+            .lean().exec();
 
         if (!viewerRequest) {
             return MedicalResponse.error("Request Not Found", 404);
@@ -120,6 +124,9 @@ async function rejectViewerRequest(request) {
     if (!viewerRequest) {
         return MedicalResponse.error("Viewer Request Not Found", 404);
     }
+    if (viewerRequest.receiver.toString() !== authId) {
+        return MedicalResponse.error("UNAUTHORIZED", 401)
+    }
 
     if (viewerRequest.status === ViewRequestModel.getRejectedStatus() || viewerRequest.status === ViewRequestModel.getAcceptedStatus()) {
         let msg = (viewerRequest.status === ViewRequestModel.getRejectedStatus() ? VIEWER_REQUEST_ALREADY_REJECTED : VIEWER_REQUEST_ALREADY_ACCEPTED);
@@ -137,34 +144,53 @@ async function getPendingRequests(request, isSender) {
         // Extract user ID from the decoded JWT token's payload
         const userId = decodedToken.payload.sub;
         const [provider, authId] = userId.split('|');
-        // this will be for two flows, if getting pending request as a sender or as a receiver
-        const filter = filterForGetPendingRequest(authId, isSender);
 
-        const listOfPendingRequests = await ViewSystemModel.find(filter).populate('sender', 'name email').lean();
-        return MedicalResponse.successWithMessage(listOfPendingRequests)
+        const listOfPendingRequestsReceived = await ViewRequestModel.find({status: 'PENDING', receiver: authId})
+            .populate('sender', 'name email')
+            .populate("receiver", 'name email')
+            .lean();
+
+        const listOfPendingRequestsSent = await ViewRequestModel.find({status: 'PENDING', sender: authId})
+            .populate('sender', 'name email')
+            .populate("receiver", 'name email')
+            .lean();
+
+        let data = {
+            sent: listOfPendingRequestsSent,
+            received:listOfPendingRequestsReceived
+        }
+        return MedicalResponse.successWithDataOnly(data)
     } catch (error) {
         console.log(error)
         return MedicalResponse.internalServerError();
     }
 }
 
-function filterForGetPendingRequest(userId, ifSenderFlow) {
-    let filter = {
-        status: ViewRequestModel.getPendingStatus()
-    }
-    if (ifSenderFlow) {
-        filter.sender = userId
-    } else {
-        filter.receiver = userId
-    }
-    return filter
-}
-
 async function cancelRequestToBeSender(request) {
-    const decodedToken = request.auth;
-    // Extract user ID from the decoded JWT token's payload
-    const userId = decodedToken.payload.sub;
-    const [provider, authId] = userId.split('|');
+    try {
+        const decodedToken = request.auth;
+        // Extract user ID from the decoded JWT token's payload
+        const userId = decodedToken.payload.sub;
+        const [provider, authId] = userId.split('|');
+
+        const requestId = request.params.requestId;
+
+        const viewerRequest = await ViewRequestModel.findById(requestId);
+        if (!viewerRequest) {
+            return MedicalResponse.error("Viewer Request Not Found", 404);
+        }
+        if (viewerRequest.sender.toString() !== authId) {
+            return MedicalResponse.error("UNAUTHORIZED to cancel request", 401)
+        }
+
+        viewerRequest.status = ViewRequestModel.getCanceledStatus();
+        await viewerRequest.save();
+        return MedicalResponse.successWithMessage("Successfully Canceled Request")
+    }
+    catch (error) {
+        console.error(error)
+        return MedicalResponse.internalServerError();
+    }
 }
 
 module.exports = {getViewerRequestById, sendRequest, acceptViewerRequest, rejectViewerRequest, getPendingRequests, searchForUserByEmail, cancelRequestToBeSender}

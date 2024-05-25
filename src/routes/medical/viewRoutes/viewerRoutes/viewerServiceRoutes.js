@@ -38,17 +38,17 @@ router.get(`${VIEWER_REQUEST_PATH}/:requestId`, async function(req, res) {
 });
 // accept request
 router.post(`${VIEWER_REQUEST_PATH}/:requestId/accept`, async function(req, res) {
-    let result = await viewRequestService.acceptViewerRequest(request);
+    let result = await viewRequestService.acceptViewerRequest(req);
     return res.status(result.code).send(result);
 });
 
 router.post(`${VIEWER_REQUEST_PATH}/:requestId/cancel`,async function(req, res) {
-    let result = await viewRequestService.cancelRequestToBeSender(request);
+    let result = await viewRequestService.cancelRequestToBeSender(req);
     return res.status(result.code).send(result);
 });
 
 router.post(`${VIEWER_REQUEST_PATH}/:requestId/reject`,async function(req, res) {
-    let result = await viewRequestService.rejectViewerRequest(request);
+    let result = await viewRequestService.rejectViewerRequest(req);
     return res.status(result.code).send(result);
 });
 

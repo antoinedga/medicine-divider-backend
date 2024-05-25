@@ -10,10 +10,12 @@ async function createUser(request) {
         let data = request.body;
         console.log("received: " + data)
         let medicineUserSchema = new MedicineDividerUserSchema();
+        const [provider, authId] = data.userId.split('|')
+        medicineUserSchema._id = authId;
         medicineUserSchema.id = data.userId;
         medicineUserSchema.name = data.firstName + " " + data.lastName;
         medicineUserSchema.email = data.email;
-        medicineUserSchema.dateOfBirth = Date.parse(data.dateOfBirth);
+        medicineUserSchema.dateOfBirth = new Date(1995, 6, 6)
 
         let result = await medicineUserSchema.save();
         console.log("DB " + result);

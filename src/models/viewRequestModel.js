@@ -1,6 +1,8 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose")
 const Schema = mongoose.Schema;
 const USER_MODEL_NAME = "MedicineDividerUser";
+
+const VIEWER_REQUEST_STATUS = ["ACCEPTED", "PENDING", "REJECTED", "CANCELED"]
 
 const ViewerRequestSchema = new Schema({
         objectId: Schema.ObjectId,
@@ -9,7 +11,6 @@ const ViewerRequestSchema = new Schema({
             ref: USER_MODEL_NAME,
             required: true,
             index: true,
-            description: "sender is user that wants the receiver to have access to their records"
         },
         receiver: {
             type: Schema.ObjectId,
@@ -20,8 +21,8 @@ const ViewerRequestSchema = new Schema({
         status: {
             type: String,
             required: true,
-            default: 'PENDING',
-            enum: ["ACCEPTED", "PENDING", 'REJECTED']
+            default: "PENDING",
+            enum: VIEWER_REQUEST_STATUS
         }
     },
     {
@@ -37,15 +38,18 @@ model.createNewViewRequest = function (sender, receiver) {
     temp.receiver = receiver;
     return temp;
 }
-model.statusEnumAsStrings = ["ACCEPTED", "PENDING", "REJECTED"]
+model.statusEnumAsStrings = VIEWER_REQUEST_STATUS
 
 model.getAcceptedStatus = function () {
-    return model.statusEnumAsStrings[0];
-}
-model.getRejectedStatus = function () {
-    return model.statusEnumAsStrings[2];
+    return VIEWER_REQUEST_STATUS[0];
 }
 model.getPendingStatus = function () {
-    return model.statusEnumAsStrings[1];
+    return VIEWER_REQUEST_STATUS[1];
+}
+model.getRejectedStatus = function () {
+    return VIEWER_REQUEST_STATUS[2];
+}
+model.getCanceledStatus = function () {
+    return VIEWER_REQUEST_STATUS[3];
 }
 module.exports = ViewRequest = model;
