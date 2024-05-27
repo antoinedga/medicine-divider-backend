@@ -1,17 +1,16 @@
 var express = require('express');
 var router = express.Router();
-const auth0CheckJwt = require("../../../../configs/auth0CheckJwt");
-const authErrorHandler = require("../../../../utils/authErrorHandlerUtil");
-const viewRequestService = require("../../../../services/medical/view/viewRequestService");
+const auth0CheckJwt = require("../../../../../configs/auth0CheckJwt");
+const authErrorHandler = require("../../../../../utils/authErrorHandlerUtil");
+const viewRequestService = require("../../../../../services/medical/view/viewer/request/viewRequestService");
+const viewModelService = require("../../../../../services/medical/view/viewer/viewerService")
 
-const {viewerGetValidator, viewerSearchValidator, viewerCreationValidator} = require("../../../../validation/viewerRequestsValidator");
-const {request} = require("express");
+const {viewerGetValidator, viewerSearchValidator, viewerCreationValidator} = require("../../../../../validation/viewerRequestsValidator");
 
 const VIEWER_REQUEST_PATH = process.env.API_VIEWER_REQUEST_PATH;
 const VIEWER_SEARCH_PATH = process.env.API_VIEWER_SEARCH_PATH;
 
 router.use(auth0CheckJwt);
-
 
 // search by email
 router.get(VIEWER_SEARCH_PATH, viewerSearchValidator, async function(req, res) {

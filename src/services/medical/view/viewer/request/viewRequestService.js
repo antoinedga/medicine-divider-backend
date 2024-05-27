@@ -1,7 +1,7 @@
-const ViewRequestModel = require("../../../models/viewRequestModel")
-const MedicineRoutineUser = require("../../../models/medicineRoutineUserModel");
-const ViewSystemModel = require("../../../models/viewSystemModel")
-const MedicalResponse = require('../../../utils/medicalResponse');
+const ViewRequestModel = require("../../../../../models/viewRequestModel")
+const MedicineRoutineUser = require("../../../../../models/medicineRoutineUserModel");
+const viewModelService = require('../viewerService')
+const MedicalResponse = require('../../../../../utils/medicalResponse');
 const VIEWER_REQUEST_ALREADY_REJECTED = "Viewer request is already rejected";
 const VIEWER_REQUEST_ALREADY_ACCEPTED = "Viewer request is already accepted";
 
@@ -24,6 +24,7 @@ async function sendRequest(request) {
         const [provider, authId] = userId.split('|');
 
         let receiverDoc = await MedicineRoutineUser.findOne({email: request.body.email}, "id name email", {lean: true}).exec();
+
         if (receiverDoc == null) {
             return MedicalResponse.error("No Such Users to Send Request", 400);
         }
@@ -86,7 +87,7 @@ async function acceptViewerRequest(request) {
             return MedicalResponse.error("Viewer Request not found", 404)
         }
 
-        if (viewerRequest.receiver !== authId) {
+        if (viewerRequest.receiver.toString() !== authId) {
             return MedicalResponse.error("This is not your request to Accept, UnAuthorized", 401)
         }
 
@@ -103,9 +104,8 @@ async function acceptViewerRequest(request) {
         await viewerRequest.save();
 
         // Add the sender to the recipient's viewers list
-        const recipient = await ViewSystemModel.findOne({userId: viewerRequest.receiver});
-        recipient.viewers.push(viewerRequest.sender);
-        await recipient.save();
+        await viewModelService.addNewViewerToList(viewerRequest.sender, viewerRequest.receiver)
+
         return MedicalResponse.successWithMessage("Viewer Request Accepted", 200);
     } catch (error) {
         console.error(error);

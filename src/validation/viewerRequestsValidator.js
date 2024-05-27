@@ -34,7 +34,7 @@ module.exports.viewerSearchValidator = [
 ]
 
 module.exports.viewerCreationValidator = [
-    body("email").notEmpty().trim().escape().normalizeEmail(),
+    body("email").notEmpty().trim().escape().isEmail(),
     (req, res, next) => {
         console.log("inside validator for time")
         const errors = validationResult(req);

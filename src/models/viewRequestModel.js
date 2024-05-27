@@ -10,13 +10,11 @@ const ViewerRequestSchema = new Schema({
             type: Schema.ObjectId,
             ref: USER_MODEL_NAME,
             required: true,
-            index: true,
         },
         receiver: {
             type: Schema.ObjectId,
             ref: USER_MODEL_NAME,
             required: true,
-            index: true
         },
         status: {
             type: String,
