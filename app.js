@@ -20,13 +20,7 @@ app.use(bodyParser.json());
 app.use(hpp());
 
 const morganMiddleware = morgan(
-    ':remote-addr - :remote-user [:date[clf]] ":method :url :status :res[content-length] - :response-time ms" ":referrer" ":user-agent"',
-    {
-        stream: {
-            // Configure Morgan to use our custom logger with the http severity
-            write: (message) => logger.http(message.trim()),
-        },
-    }
+    ':remote-addr - :remote-user [:date[clf]] ":method :url status::status res-length::res[content-length] - res-time::response-time ms" ":referrer" ":user-agent"'
 );
 
 app.use(morganMiddleware);

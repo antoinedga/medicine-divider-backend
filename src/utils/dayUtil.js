@@ -23,7 +23,7 @@ function getDayToIndexString(day) {
     if ("sun".localeCompare(day.toLowerCase()) === 0  ||"sunday".localeCompare(day.toLowerCase()) === 0 ) {
         return 6;
     }
-
+    return null;
 }
 
 const VALID_LONG_DAYS_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
