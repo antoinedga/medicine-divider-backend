@@ -1,4 +1,4 @@
-const {query,   validationResult, body} = require("express-validator");
+const {query,   validationResult, body, param} = require("express-validator");
 const VIEWER_REQUEST_STATUS = ["pending", "accepted"];
 const validateEmailQueryParam = (req, res, next) => {
     // Check if there are any query parameters other than 'email'
@@ -13,12 +13,6 @@ const validateEmailQueryParam = (req, res, next) => {
     // If all query parameters are valid, move to the next middleware
     next();
 };
-
-module.exports.viewerGetValidator = [
-    query("status").optional().trim().escape()
-        .isString()
-        .isIn(VIEWER_REQUEST_STATUS)
-]
 
 module.exports.viewerSearchValidator = [
     validateEmailQueryParam,
@@ -44,3 +38,14 @@ module.exports.viewerCreationValidator = [
         next();
     }
 ]
+
+module.exports.viewerRequestIdValidator = [
+    param('requestId').isMongoId().withMessage('Invalid request ID'),
+    (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        next();
+    }
+];

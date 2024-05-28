@@ -59,7 +59,7 @@ async function removeFromViewer(request) {
         }
 
         viewerModel.viewers = viewerModel.viewers.filter(viewer =>{
-            return (viewer.toString !== userToRemove._id)
+            return (viewer.toString() !== userToRemove._id.toString())
         });
         await viewerModel.save();
         return MedicalResponse.successWithMessage(`Removed ${userToRemove.email} from viewers list`)

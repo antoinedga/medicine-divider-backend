@@ -3,9 +3,9 @@ var router = express.Router();
 const auth0CheckJwt = require("../../../../../configs/auth0CheckJwt");
 const authErrorHandler = require("../../../../../utils/authErrorHandlerUtil");
 const viewRequestService = require("../../../../../services/medical/view/viewer/request/viewRequestService");
-const viewModelService = require("../../../../../services/medical/view/viewer/viewerService")
 
-const {viewerGetValidator, viewerSearchValidator, viewerCreationValidator} = require("../../../../../validation/viewerRequestsValidator");
+const {viewerSearchValidator, viewerCreationValidator
+    , viewerRequestIdValidator} = require("../../../../../validation/viewerRequestsValidator");
 
 const VIEWER_REQUEST_PATH = process.env.API_VIEWER_REQUEST_PATH;
 const VIEWER_SEARCH_PATH = process.env.API_VIEWER_SEARCH_PATH;
@@ -31,22 +31,22 @@ router.post(VIEWER_REQUEST_PATH, viewerCreationValidator, async function(req, re
 });
 
 // get request
-router.get(`${VIEWER_REQUEST_PATH}/:requestId`, async function(req, res) {
+router.get(`${VIEWER_REQUEST_PATH}/:requestId`,viewerRequestIdValidator, async function(req, res) {
     let result = await viewRequestService.getViewerRequestById(req);
     return res.status(result.code).send(result);
 });
 // accept request
-router.post(`${VIEWER_REQUEST_PATH}/:requestId/accept`, async function(req, res) {
+router.post(`${VIEWER_REQUEST_PATH}/:requestId/accept`, viewerRequestIdValidator, async function(req, res) {
     let result = await viewRequestService.acceptViewerRequest(req);
     return res.status(result.code).send(result);
 });
 
-router.post(`${VIEWER_REQUEST_PATH}/:requestId/cancel`,async function(req, res) {
+router.post(`${VIEWER_REQUEST_PATH}/:requestId/cancel`,viewerRequestIdValidator, async function(req, res) {
     let result = await viewRequestService.cancelRequestToBeSender(req);
     return res.status(result.code).send(result);
 });
 
-router.post(`${VIEWER_REQUEST_PATH}/:requestId/reject`,async function(req, res) {
+router.post(`${VIEWER_REQUEST_PATH}/:requestId/reject`, viewerRequestIdValidator, async function(req, res) {
     let result = await viewRequestService.rejectViewerRequest(req);
     return res.status(result.code).send(result);
 });
