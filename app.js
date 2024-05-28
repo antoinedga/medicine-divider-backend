@@ -4,11 +4,9 @@ const morgan = require('morgan');
 const helmet = require('helmet')
 const hpp = require('hpp');
 const bodyParser = require('body-parser')
-const {logger} = require("./src/utils/loggerWinston")
 const connectDB = require('./src/configs/mongodb.connection');
 const limiter= require('./src/configs/rate.limiter')
 const indexRouter = require('./src/routes/medical');
-const usersRouter = require("./src/routes/usersRoutes");
 
 const app = express();
 
@@ -28,7 +26,6 @@ app.use(morganMiddleware);
 connectDB();
 
 app.use('/',indexRouter);
-app.use("/api",usersRouter)
 
 const port = process.env.PORT || 8080; // process.env.port is Heroku's port if you choose to deploy the app there
 app.listen(port, () => console.log(`Server up and running on port ${port} !`));

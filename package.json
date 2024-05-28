@@ -41,5 +41,15 @@
     "jest-cli": "^29.7.0",
     "nodemon": "^3.0.1",
     "supertest": "^6.3.3"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/models/*"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["html", "text", "lcov", "json"]
   }
 }
