@@ -10,8 +10,6 @@ const {viewerSearchValidator, viewerCreationValidator
 const VIEWER_REQUEST_PATH = process.env.API_VIEWER_REQUEST_PATH;
 const VIEWER_SEARCH_PATH = process.env.API_VIEWER_SEARCH_PATH;
 
-router.use(auth0CheckJwt);
-
 // search by email
 router.get(VIEWER_SEARCH_PATH, viewerSearchValidator, async function(req, res) {
     let result = await viewRequestService.searchForUserByEmail(req);
@@ -50,7 +48,5 @@ router.post(`${VIEWER_REQUEST_PATH}/:requestId/reject`, viewerRequestIdValidator
     let result = await viewRequestService.rejectViewerRequest(req);
     return res.status(result.code).send(result);
 });
-
-router.use(authErrorHandler)
 
 module.exports = router;

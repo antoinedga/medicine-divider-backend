@@ -6,8 +6,6 @@ const timeIntervalService = require("../../../../services/medical/routines/TimeI
 const authErrorHandler = require("../../../../utils/authErrorHandlerUtil")
 const TIME_PATH = "/time";
 
-router.use(auth0CheckJwt);
-router.use(authErrorHandler)
 
 // get time intervals
 router.get(TIME_PATH, async function (req, res) {

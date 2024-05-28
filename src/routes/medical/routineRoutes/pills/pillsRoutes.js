@@ -9,8 +9,6 @@ const router = express.Router();
 
 const PILL_PATH = "/pills"
 
-router.use(auth0CheckJwt);
-router.use(authErrorHandler)
 router.post(PILL_PATH, addPillValidator, async function(req, res) {
     let result = await pillsService.addPillToRoutine(req);
     return res.status(result.code).send(result);

@@ -2,7 +2,7 @@
 function handleAuthError(err, req, res, next) {
     // If authentication error (token expired, invalid token, etc.)
     if (err.name === "InvalidTokenError" || err.name === "UnauthorizedError") {
-        console.error("")
+        console.error(`${err.name}: ${err.toString()}`)
         return res.status(401).json({error: 'Unauthorized: Invalid Token'})
     }
     // For other errors, pass them to the default error handler
