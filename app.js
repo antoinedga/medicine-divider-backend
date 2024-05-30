@@ -1,6 +1,7 @@
 require('./src/configs/configPropertyValidator')
 const express = require('express');
-const morgan = require('morgan');
+const morganMiddleware = require('./src/configs/morganLoggerConfig');
+const { v4: uuidv4 } = require('uuid');
 const helmet = require('helmet')
 const hpp = require('hpp');
 const bodyParser = require('body-parser')
@@ -17,11 +18,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(hpp());
 
-const morganMiddleware = morgan(
-    ':remote-addr - :remote-user [:date[clf]] ":method :url status::status res-length::res[content-length] - res-time::response-time ms" ":referrer" ":user-agent"'
-);
+app.use((req, res, next) => {
+    req.id = uuidv4(); // Assign a unique ID to the request object
+    next(); // Call the next middleware
+});
 
-app.use(morganMiddleware);
+app.use(morganMiddleware.morganMiddleware);
 
 connectDB();
 

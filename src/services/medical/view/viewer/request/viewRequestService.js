@@ -5,9 +5,16 @@ const MedicalResponse = require('../../../../../utils/medicalResponse');
 const VIEWER_REQUEST_ALREADY_REJECTED = "Viewer request is already rejected";
 const VIEWER_REQUEST_ALREADY_ACCEPTED = "Viewer request is already accepted";
 
+const LOGGER = require("../../../../../utils/loggerWinston")
+const {logger} = require("../../../../../utils/loggerWinston");
+
 async function searchForUserByEmail(request){
     let emailToSearch = request.query.email;
+
+    logger.info(`User: ${request.auth.payload.sub} searched for \'${emailToSearch}\'`)
+
     let user = await MedicineRoutineUser.findOne({email: emailToSearch}, "name email", {lean: true}).exec();
+
     if (!user) {
         return MedicalResponse.error("NO user found with that email", 404);
     }

@@ -6,8 +6,8 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "DEBUG=* nodemon app.js",
-    "test": "jest --coverage",
+    "dev": "NODE_ENV=dev DEBUG=* nodemon app.js",
+    "test": "NODE_ENV=test DEBUG=* jest --coverage",
     "eslint": "eslint src --config .eslintrc.js"
   },
   "dependencies": {
@@ -20,6 +20,7 @@
     "express-oauth2-jwt-bearer": "^1.6.0",
     "express-openid-connect": "^2.17.1",
     "express-rate-limit": "^7.1.3",
+    "express-request-id": "^3.0.0",
     "express-validator": "^7.0.1",
     "handlebars": "^4.7.8",
     "helmet": "^7.0.0",
@@ -50,6 +51,11 @@
       "!src/models/*"
     ],
     "coverageDirectory": "coverage",
-    "coverageReporters": ["html", "text", "lcov", "json"]
+    "coverageReporters": [
+      "html",
+      "text",
+      "lcov",
+      "json"
+    ]
   }
 }
