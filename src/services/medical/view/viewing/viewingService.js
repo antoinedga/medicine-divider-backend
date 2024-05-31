@@ -1,7 +1,7 @@
 const MedicineRoutineUser = require("../../../../models/medicineRoutineUserModel");
 const ViewSystemModel = require("../../../../models/viewSystemModel")
 const MedicalResponse = require("../../../../utils/medicalResponse")
-
+const mongoose = require("mongoose")
 
 async function getListOfUserCanView(request) {
     try {
@@ -43,15 +43,15 @@ async function getMedicalRecordOfUser(request) {
             return MedicalResponse.error("Unknown user", 404)
         }
 
-        let userViewModel = await ViewSystemModel.findOne({userId: medicalRecord._id}).lean().exec();
+        let userViewModel = await ViewSystemModel.findOne({userId: medicalRecord._id}).exec();
 
         if (!userViewModel) {
             console.log("ERROR in getting viewModel schema")
             return MedicalResponse.error("Unknown Error")
         }
 
-        if (userViewModel.viewers.includes(authId)) {
-            medicalRecord = await MedicineRoutineUser.findOne({email: emailParam}, "_id name email medicineRoutine dateOfBirth", {lean: true}).exec();
+        if (userViewModel.includesViewer(authId)) {
+            medicalRecord = await MedicineRoutineUser.findOne({email: emailParam}, "-_id name email medicineRoutine -dateOfBirth", {lean: true}).exec();
         } else {
             return MedicalResponse.error("Unauthorized", 401)
         }

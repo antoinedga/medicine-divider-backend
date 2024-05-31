@@ -11,7 +11,6 @@ router.get("", async function (req, res) {
     const userId = decodedToken.payload.sub;
     let result = await medicineRoutineService.getUserMedicineRoutine(userId);
     return res.status(result.code).send(result)
-
 });
 router.get("/days/:day", async function(req,res) {
     const decodedToken = req.auth;

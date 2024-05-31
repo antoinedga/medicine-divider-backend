@@ -25,6 +25,16 @@ const ViewSystemSchema = new Schema({
         timestamps: true
     });
 
+// Custom instance method to check if ObjectId exists in viewers array
+ViewSystemSchema.methods.includesViewer = function (authId) {
+    const authIdAsObjectId = new mongoose.Types.ObjectId(authId);
+    return this.viewers.some(id => id.equals(authIdAsObjectId));
+};
+
 let model = mongoose.model("ViewSystem", ViewSystemSchema)
 
+// model.includesViewer = function (authId) {
+//     const authIdAsObjectId = new mongoose.Types.ObjectId(authId);
+//     return this.viewers.some(id => id.equals(authIdAsObjectId));
+// };
 module.exports = ViewSystem = model
