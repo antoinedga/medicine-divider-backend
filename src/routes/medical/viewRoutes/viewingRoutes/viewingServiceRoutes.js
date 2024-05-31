@@ -10,4 +10,13 @@ router.get(VIEWING_ROOT_API, async function(req, res){
    return res.status(result.code).send(result);
 });
 
+router.get(VIEWING_ROOT_API + "/:email", async function(req, res) {
+   let result = await viewingService.getMedicalRecordOfUser(req);
+   return res.status(result.code).send(result);
+});
+
+router.delete(VIEWING_ROOT_API + "/:email", async function(req, res) {
+   let result = await viewingService.removeSelfFromUsersViewerList(req);
+   return res.status(result.code).send(result);
+});
 module.exports = router;
