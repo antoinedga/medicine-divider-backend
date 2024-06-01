@@ -2,7 +2,7 @@ const {validationResult, param} = require("express-validator");
 
 module.exports.viewingEmailParamValidator =
     [
-        param("email").isEmail().trim().escape(),
+        param("email").exists().isEmail().trim().escape().withMessage("Must Be A Valid Email"),
         (req, res, next) => {
             console.log("inside validator for time")
             const errors = validationResult(req);
