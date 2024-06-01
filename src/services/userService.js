@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const MedicineDividerUserSchema = require("../models/medicineRoutineUserModel");
 const ViewSystem = require("../models/viewSystemModel");
+const moment = require("moment")
 
 async function createUser(request) {
     // start mongo transaction
@@ -15,7 +16,7 @@ async function createUser(request) {
         medicineUserSchema.id = data.userId;
         medicineUserSchema.name = data.firstName + " " + data.lastName;
         medicineUserSchema.email = data.email;
-        medicineUserSchema.dateOfBirth = new Date(1995, 6, 6)
+        medicineUserSchema.dateOfBirth = moment(data.dateOfBirth, "MM/DD/YYYY").toDate();
 
         let result = await medicineUserSchema.save();
         console.log("DB " + result);
