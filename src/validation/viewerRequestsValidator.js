@@ -1,5 +1,5 @@
 const {query,   validationResult, body, param} = require("express-validator");
-const VIEWER_REQUEST_STATUS = ["pending", "accepted"];
+
 const validateEmailQueryParam = (req, res, next) => {
     // Check if there are any query parameters other than 'email'
     const allowedParams = ['email'];

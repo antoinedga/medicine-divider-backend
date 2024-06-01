@@ -1,8 +1,6 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const medicineRoutineService = require("../../../services/medical/routines/MedicineRoutineService")
-const auth0CheckJwt = require("../../../configs/auth0CheckJwt")
-const authErrorHandler = require("../../../utils/authErrorHandlerUtil");
 // get all
 
 router.get("", async function (req, res) {

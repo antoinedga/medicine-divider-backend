@@ -1,11 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const auth0CheckJwt = require("../../../../configs/auth0CheckJwt")
 const {newTimeIntervalValidators,deleteTimeIntervalValidators, updateTimeIntervalValidator} = require("../../../../validation/timeIntervalRequestValidator")
 const timeIntervalService = require("../../../../services/medical/routines/TimeIntervalService")
-const authErrorHandler = require("../../../../utils/authErrorHandlerUtil")
 const TIME_PATH = "/time";
-
 
 // get time intervals
 router.get(TIME_PATH, async function (req, res) {

@@ -1,7 +1,5 @@
-var express = require('express');
-var router = express.Router();
-const auth0CheckJwt = require("../../../../../configs/auth0CheckJwt");
-const authErrorHandler = require("../../../../../utils/authErrorHandlerUtil");
+const express = require('express');
+const router = express.Router();
 const viewRequestService = require("../../../../../services/medical/view/viewer/request/viewRequestService");
 
 const {viewerSearchValidator, viewerCreationValidator

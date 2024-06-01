@@ -1,7 +1,5 @@
-var express = require('express');
-var router = express.Router();
-const auth0CheckJwt = require("../../../../configs/auth0CheckJwt");
-const authErrorHandler = require("../../../../utils/authErrorHandlerUtil");
+const express = require('express');
+const router = express.Router();
 const viewingService = require("../../../../services/medical/view/viewing/viewingService")
 
 const VIEWING_ROOT_API = process.env.API_VIEWING_PATH
