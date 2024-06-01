@@ -45,11 +45,4 @@ async function createUser(request) {
     }
 }
 
-async function doesEmailExist(email) {
-    let usersByEmail = await managementClient.usersByEmail.getByEmail({email: email});
-    return usersByEmail && usersByEmail.data.length > 0;
-}
-
-
 module.exports = {createUser};
-

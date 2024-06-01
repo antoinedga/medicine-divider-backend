@@ -35,4 +35,22 @@ describe('User Model Tests', () => {
         let viewModel = await ViewSystemModel.find().exec();
         expect(viewModel.length).toEqual(1);
     })
+
+    test("Testing Creation of User, ensuring no user was created",async () => {
+        const request = {
+            body: {
+                userId: "auth|114fe7529c12ce6e60f9df5c",
+                firstName: "Test",
+                lastName: "Test",
+                email: "test@gmail.com",
+            }
+        }
+
+        let res = await subject.createUser(request)
+        expect(res.success).toBe(false)
+        let medDocs = await MedicineRoutineUserModel.find().exec()
+        expect(medDocs.length).toEqual(0)
+        let viewModel = await ViewSystemModel.find().exec();
+        expect(viewModel.length).toEqual(0);
+    })
 })
