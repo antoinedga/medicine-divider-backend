@@ -1,5 +1,5 @@
 const morgan = require('morgan');
-const winston = require("../utils/loggerWinston");
+const winston = require("./loggerWinston");
 
 
 const customMorganFormat = (tokens, req, res, error) => {

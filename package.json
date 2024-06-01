@@ -51,7 +51,7 @@
       "src/**/*.{js,jsx,ts,tsx}",
       "!src/**/*.d.ts",
       "!src/models/*",
-      "!src/routes/*"
+      "!src/configs/*"
     ],
     "coverageDirectory": "coverage",
     "coverageReporters": [

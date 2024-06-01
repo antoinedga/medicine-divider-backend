@@ -5,8 +5,8 @@ const MedicalResponse = require('../../../../../utils/medicalResponse');
 const VIEWER_REQUEST_ALREADY_REJECTED = "Viewer request is already rejected";
 const VIEWER_REQUEST_ALREADY_ACCEPTED = "Viewer request is already accepted";
 
-const LOGGER = require("../../../../../utils/loggerWinston")
-const {logger} = require("../../../../../utils/loggerWinston");
+const LOGGER = require("../../../../../configs/loggerWinston")
+const {logger} = require("../../../../../configs/loggerWinston");
 
 async function searchForUserByEmail(request){
     let emailToSearch = request.query.email;
