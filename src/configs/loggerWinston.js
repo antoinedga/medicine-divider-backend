@@ -2,11 +2,7 @@ const winston = require('winston');
 const { combine, timestamp, printf } = winston.format;
 
 // Define a custom log format
-const customFormat = printf(({ level, message, timestamp, method }) => {
-    // Get the file name and line number where the logging call originates from
-    const stackInfo = new Error().stack.split('\n')[4];
-    const callingFunction = stackInfo.trim().replace(/^\at\s+/, '');
-
+const customFormat = printf(({ level, message, requestId, timestamp, method }) => {
     return `[${timestamp}] [${level}] ${message}\n`;
 });
 
@@ -42,5 +38,17 @@ const stream = {
     }
 };
 
+const info = (req, message) => {
+    logger.info(`requestId:[${req.id}] - ${message}`);
+}
+const error = (req, message) => {
+    logger.error(`requestId:[${req.id}] - ${message}`)
+}
+const debug = (req, message) => {
+    logger.debug(`requestId:[${req.id}] - ${message}`)
+}
+const warn = (req, message) => {
+    logger.warn(`requestId:[${req.id}] - ${message}`)
+}
 
-module.exports = {logger, stream}
+module.exports = {stream, info, error, debug, warn}
