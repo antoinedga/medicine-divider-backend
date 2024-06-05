@@ -5,12 +5,10 @@ const LOGGER = require("../../../../configs/loggerWinston");
 
 async function getListOfUserCanView(request) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
-        const [provider, authId] = userId.split('|');
+        const userId = request.userId;
 
-        const viewSystems = await ViewSystemModel.find({ viewers: authId })
+        const viewSystems = await ViewSystemModel.find({ viewers: userId })
             .select("userId")
             .populate('userId', 'name email -_id')
             .lean();
@@ -36,10 +34,7 @@ async function getListOfUserCanView(request) {
 
 async function getMedicalRecordOfUser(request) {
     try {
-        const decodedToken = request.auth;
-        // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
-        const [provider, authId] = userId.split('|');
+        const userId = request.userId;
         const emailParam = request.params.email;
 
         let medicalRecord = await MedicineRoutineUser.findOne({email: emailParam}, "_id name", {lean: true}).exec();
@@ -55,7 +50,7 @@ async function getMedicalRecordOfUser(request) {
             return MedicalResponse.error("Unknown Error")
         }
 
-        if (userViewModel.includesViewer(authId)) {
+        if (userViewModel.includesViewer(userId)) {
             medicalRecord = await MedicineRoutineUser.findOne({email: emailParam}, "-_id name email medicineRoutine -dateOfBirth", {lean: true}).exec();
         } else {
             LOGGER.error(request, `user does not have access to ${emailParam}`)
@@ -72,10 +67,8 @@ async function getMedicalRecordOfUser(request) {
 
 async function removeSelfFromUsersViewerList(request) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
-        const [provider, authId] = userId.split('|');
+        const userId = request.userId;
         const emailParam = request.params.email;
 
         let medicalRecord = await MedicineRoutineUser.findOne({email: emailParam}, "_id name", {lean: true}).exec();
@@ -93,7 +86,7 @@ async function removeSelfFromUsersViewerList(request) {
         }
 
         userViewModel.viewers.filter(viewer => {
-            return viewer.toString() !== authId
+            return viewer.toString() !== userId
         });
 
         await userViewModel.save();

@@ -4,9 +4,7 @@ const LOGGER = require("../../../configs/LOGGERWinston")
 const MedicalResponse = require('../../../utils/medicalResponse')
 async function addPillToRoutine(request) {
     try {
-        const decodedToken = request.auth;
-        // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
+        const userId = request.userId;
 
         let documents = await MedicineRoutineUserModel.findOne({ id: userId }, null, null).exec();
         let pillsToAdd = request.body.pillsToAdd;
@@ -45,11 +43,10 @@ async function addPillToRoutine(request) {
 async function deletePillFromRoutineByAllOccurrence(request) {
     try {
         let toDelete = request.body.toDelete;
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
+        const userId = request.userId;
 
-        let document = await MedicineRoutineUserModel.findOne({ id: userId }).exec();
+        let document = await MedicineRoutineUserModel.findOne({ id: userId }, null, null).exec();
 
         let days = document.medicineRoutine.days;
         let numberOfDeletes = 0;
@@ -77,9 +74,8 @@ async function deletePillFromRoutineByAllOccurrence(request) {
 
 async function deletePillFromRoutineByDays(request) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
+        const userId = request.userId;
 
         let document = await MedicineRoutineUserModel.findOne({ id: userId }, null, null).exec();
 
@@ -116,11 +112,10 @@ async function deletePillFromRoutineByDays(request) {
 
 async function deletePillFromRoutineByDayTime(request) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
+        const userId = request.userId;
         let data = request.body;
-        let document = await MedicineRoutineUserModel.findOne({ id: userId }).exec();
+        let document = await MedicineRoutineUserModel.findOne({ id: userId }, null, null).exec();
 
         let target = null;
         let index = null;
@@ -153,9 +148,8 @@ async function deletePillFromRoutineByDayTime(request) {
 //Get all the Pills Names
 async function getAllPillsInRoutine(request) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
+        const userId = request.userId;
 
         let document = await MedicineRoutineUserModel.findOne({id: userId}, null, {lean: true}).exec();
 

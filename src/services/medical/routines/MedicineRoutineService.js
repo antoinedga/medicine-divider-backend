@@ -2,9 +2,9 @@ const MedicineRoutineUserModel = require("../../../models/medicineRoutineUserMod
 const {getDayToIndexString} = require("../../../utils/dayUtil")
 const MedicalResponse = require('../../../utils/medicalResponse')
 const LOGGER = require("../../../configs/loggerWinston")
-async function getUserMedicineRoutine(request, userId) {
+async function getUserMedicineRoutine(request) {
     try {
-        let docs = await MedicineRoutineUserModel.findOne({ id: userId }, null, {lean: true}).exec();
+        let docs = await MedicineRoutineUserModel.findOne({ id: request.userId }, null, {lean: true}).exec();
         if (docs == null) {
             LOGGER.error(request,"Invalid UserId with Valid token")
             return MedicalResponse.error("no account with that email", 400)
@@ -18,17 +18,17 @@ async function getUserMedicineRoutine(request, userId) {
     }
 }
 
-async function getUserMedicineRoutineByDay(request, userId, day) {
+async function getUserMedicineRoutineByDay(request, day) {
     try {
         let index = getDayToIndexString(day);
-        let docs = await MedicineRoutineUserModel.findOne({ id: userId }, null,{
+        let docs = await MedicineRoutineUserModel.findOne({ id: request.userId }, null,{
             lean: true
         }).exec();
         if (docs == null) {
             LOGGER.error(request,"Invalid UserId with Valid token")
             return MedicalResponse.error("no account with that userId")
         }
-        LOGGER.info(request, `Successfully got ${userId} for '${day}'`)
+        LOGGER.info(request, `Successfully got ${request.userId} for '${day}'`)
         return MedicalResponse.successWithDataOnly(docs.medicineRoutine.days[index])
     }
     catch (error) {

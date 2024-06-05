@@ -24,11 +24,9 @@ async function searchForUserByEmail(request){
 
 async function sendRequest(request) {
     try {
-        const decodedToken = request.auth;
         let existingRequest = null;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
-        const [provider, authId] = userId.split('|');
+        const userId = request.userId;
 
         let receiverDoc = await MedicineRoutineUser.findOne({email: request.body.email}, "id name email", {lean: true}).exec();
 
@@ -38,7 +36,7 @@ async function sendRequest(request) {
         // check if this user has a pending request from sender already
         existingRequest = await ViewRequestModel.findOne({
             receiver: receiverDoc._id,
-            sender: authId
+            sender: userId
         }).sort({updatedAt: -1}).lean().exec();
 
         if (existingRequest && existingRequest.status === ViewRequestModel.getPendingStatus()) {
@@ -46,7 +44,7 @@ async function sendRequest(request) {
         }
 
         // create a new Viewer Request
-        const viewerRequest = ViewRequestModel.createNewViewRequest(authId, receiverDoc._id);
+        const viewerRequest = ViewRequestModel.createNewViewRequest(userId, receiverDoc._id);
         await viewerRequest.save();
         return MedicalResponse.success( null, "Viewer Request Sent", 201);
     } catch (error) {
@@ -57,10 +55,8 @@ async function sendRequest(request) {
 
 async function getViewerRequestById(request) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
-        const [provider, authId] = userId.split('|');
+        const userId = request.userId;
         const requestId = request.params.requestId;
 
         let viewerRequest = await ViewRequestModel.findById(requestId)
@@ -69,23 +65,23 @@ async function getViewerRequestById(request) {
             .lean().exec();
 
         if (!viewerRequest) {
+            LOGGER.error(request, `ViewerRequest: ${requestId} Not Found`)
             return MedicalResponse.error("Request Not Found", 404);
         }
-
+        LOGGER.info(request, `Successfully retrieved viewerRequest ${requestId}`)
         return MedicalResponse.successWithDataOnly( viewerRequest,200)
     }
     catch (error) {
-        console.log(error)
+        LOGGER.debug(request, error.message)
+        LOGGER.error(request, error.stack)
         return MedicalResponse.internalServerError();
     }
 }
 
 async function acceptViewerRequest(request) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
-        const [provider, authId] = userId.split('|');
+        const userId = request.userId;
         const requestId = request.params.requestId;
 
         const viewerRequest = await ViewRequestModel.findById(requestId);
@@ -94,7 +90,7 @@ async function acceptViewerRequest(request) {
             return MedicalResponse.error("Viewer Request not found", 404)
         }
 
-        if (viewerRequest.receiver.toString() !== authId) {
+        if (viewerRequest.receiver.toString() !== userId) {
             return MedicalResponse.error("This is not your request to Accept, UnAuthorized", 401)
         }
 
@@ -122,49 +118,52 @@ async function acceptViewerRequest(request) {
 }
 
 async function rejectViewerRequest(request) {
-    const decodedToken = request.auth;
-    // Extract user ID from the decoded JWT token's payload
-    const userId = decodedToken.payload.sub;
-    const [provider, authId] = userId.split('|');
-    const requestId = request.params.requestId;
+    try {
+        // Extract user ID from the decoded JWT token's payload
+        const userId = request.userId;
+        const requestId = request.params.requestId;
 
-    const viewerRequest = await ViewRequestModel.findById(requestId, null, null).exec();
+        const viewerRequest = await ViewRequestModel.findById(requestId, null, null).exec();
 
-    if (!viewerRequest) {
-        return MedicalResponse.error("Viewer Request Not Found", 404);
+        if (!viewerRequest) {
+            return MedicalResponse.error("Viewer Request Not Found", 404);
+        }
+
+        if (viewerRequest.receiver.toString() !== userId) {
+            return MedicalResponse.error("Unauthorized: cannot reject request that you are not the receiver", 401)
+        }
+
+        if (viewerRequest.status === ViewRequestModel.getRejectedStatus() || viewerRequest.status === ViewRequestModel.getAcceptedStatus()) {
+            let msg = (viewerRequest.status === ViewRequestModel.getRejectedStatus() ? VIEWER_REQUEST_ALREADY_REJECTED : VIEWER_REQUEST_ALREADY_ACCEPTED);
+            LOGGER.info(request, msg);
+            return MedicalResponse.error(msg, 400);
+        }
+
+        viewerRequest.status = ViewRequestModel.getRejectedStatus();
+
+        await viewerRequest.save();
+        LOGGER.info(request, `Viewer request updated to  ${ViewRequestModel.getRejectedStatus()}`)
+        return MedicalResponse.successWithMessage(`Viewer request set to '${ViewRequestModel.getRejectedStatus()}'`);
     }
-
-    if (viewerRequest.receiver.toString() !== authId) {
-        return MedicalResponse.error("Unauthorized: cannot reject request that you are not the receiver", 401)
+    catch (error) {
+        LOGGER.debug(request, error.message)
+        LOGGER.error(request, error.stack)
+        return MedicalResponse.internalServerError();
     }
-
-    if (viewerRequest.status === ViewRequestModel.getRejectedStatus() || viewerRequest.status === ViewRequestModel.getAcceptedStatus()) {
-        let msg = (viewerRequest.status === ViewRequestModel.getRejectedStatus() ? VIEWER_REQUEST_ALREADY_REJECTED : VIEWER_REQUEST_ALREADY_ACCEPTED);
-        LOGGER.info(request, msg);
-        return MedicalResponse.error(msg, 400);
-    }
-
-    viewerRequest.status = ViewRequestModel.getRejectedStatus();
-
-    await viewerRequest.save();
-    LOGGER.info(request, `Viewer request updated to  ${ViewRequestModel.getRejectedStatus()}`)
-    return MedicalResponse.successWithMessage(`Viewer request set to '${ViewRequestModel.getRejectedStatus()}'`);
 }
 
 async function getPendingRequests(request, isSender) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
-        const [provider, authId] = userId.split('|');
+        const userId = request.userId;
 
-        const listOfPendingRequestsReceived = await ViewRequestModel.find({status: 'PENDING', receiver: authId})
+        const listOfPendingRequestsReceived = await ViewRequestModel.find({status: 'PENDING', receiver: userId})
             .populate('sender', 'name email')
             .populate("receiver", 'name email')
             .lean();
 
         const listOfPendingRequestsSent = await ViewRequestModel
-            .find({status: ViewRequestModel.getPendingStatus(), sender: authId})
+            .find({status: ViewRequestModel.getPendingStatus(), sender: userId})
             .populate('sender', 'name email')
             .populate("receiver", 'name email')
             .lean();
@@ -184,10 +183,8 @@ async function getPendingRequests(request, isSender) {
 
 async function cancelRequestToBeSender(request) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
-        const [provider, authId] = userId.split('|');
+        const userId = request.userId;
 
         const requestId = request.params.requestId;
 
@@ -196,7 +193,7 @@ async function cancelRequestToBeSender(request) {
             LOGGER.info(request, `Cannot find Viewer Request ${requestId}`)
             return MedicalResponse.error("Viewer Request Not Found", 404);
         }
-        if (viewerRequest.sender.toString() !== authId) {
+        if (viewerRequest.sender.toString() !== userId) {
             return MedicalResponse.error("Unauthorized: Cannot cancel request that you did not sent", 401)
         }
 

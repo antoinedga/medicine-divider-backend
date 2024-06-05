@@ -4,17 +4,11 @@ const medicineRoutineService = require("../../../services/medical/routines/Medic
 // get all
 
 router.get("", async function (req, res) {
-    const decodedToken = req.auth;
-    // Extract user ID from the decoded JWT token's payload
-    const userId = decodedToken.payload.sub;
-    let result = await medicineRoutineService.getUserMedicineRoutine(req, userId);
+    let result = await medicineRoutineService.getUserMedicineRoutine(req);
     return res.status(result.code).send(result)
 });
 router.get("/days/:day", async function(req,res) {
-    const decodedToken = req.auth;
-    // Extract user ID from the decoded JWT token's payload
-    const userId = decodedToken.payload.sub;
-    let result = await medicineRoutineService.getUserMedicineRoutineByDay(req, userId, req.params.day);
+    let result = await medicineRoutineService.getUserMedicineRoutineByDay(req, req.params.day);
     return res.status(result.code).send(result)
 });
 

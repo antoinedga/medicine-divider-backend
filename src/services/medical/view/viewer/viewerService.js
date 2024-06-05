@@ -5,12 +5,10 @@ const LOGGER = require("../../../../configs/loggerWinston")
 
 async function getListOfViewers(request) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
-        const [provider, authId] = userId.split('|');
+        const userId = request.userId;
 
-        let userViewers = await ViewSystemModel.findOne({userId: authId})
+        let userViewers = await ViewSystemModel.findOne({userId: userId}, null, null)
             .populate('viewers', 'name email')
             .lean().exec();
 
@@ -49,14 +47,11 @@ async function addNewViewerToList(request, sender, receiver) {
 
 async function removeFromViewer(request) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
-        const [provider, authId] = userId.split('|');
-
+        const userId = request.userId;
         const userToRemove = await MedicineRoutineUser.findOne({email: request.body.email}).lean().exec();
 
-        const viewerModel = await ViewSystemModel.findOne({userId: authId}).exec();
+        const viewerModel = await ViewSystemModel.findOne({userId: userId}).exec();
 
         if (!userToRemove) {
             LOGGER.info(request, `No Such User found ${request.body.email}`)

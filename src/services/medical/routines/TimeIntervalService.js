@@ -6,9 +6,8 @@ const LOGGER = require("../../../configs/loggerWinston")
 const MedicalResponse = require("../../../utils/medicalResponse")
 async function getTimeInterval(request) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
+        const userId = request.userId;
 
         let document = await MedicineRoutineUserModel.findOne({id: userId}, MONGO_FILTER, {
             lean: true
@@ -24,9 +23,8 @@ async function getTimeInterval(request) {
 }
 
 async function addTimeInterval(request) {
-    const decodedToken = request.auth;
     // Extract user ID from the decoded JWT token's payload
-    const userId = decodedToken.payload.sub;
+    const userId = request.userId;
     let document = await MedicineRoutineUserModel
         .findOne({id: userId}, null, null).exec();
 
@@ -72,9 +70,8 @@ async function deleteTimeIntervals(request) {
     try {
         const timesToRemove = request.body.times;
 
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
+        const userId = request.userId;
         let document = await MedicineRoutineUserModel.findOne({id: userId}, null, null).exec();
 
         let counter = 0;
@@ -108,9 +105,8 @@ async function deleteTimeIntervals(request) {
 
 async function updateTimeIntervals(request) {
     try {
-        const decodedToken = request.auth;
         // Extract user ID from the decoded JWT token's payload
-        const userId = decodedToken.payload.sub;
+        const userId = request.userId;
         const timeIntervals = request.body.updateTime;
 
         let document = await MedicineRoutineUserModel.findOne({id: userId}, null, null).exec();
