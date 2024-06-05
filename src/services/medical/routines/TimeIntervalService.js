@@ -2,15 +2,23 @@ const MedicineRoutineUserModel = require("../../../models/medicineRoutineUserMod
 const MONGO_FILTER = "id medicineRoutine.timeIntervals"
 const timeIntervalEnum = require("../../../utils/timeIntervalEnum");
 const {sortPillsTimeSlots} = require("../../../utils/timeIntervalEnum");
+const LOGGER = require("../../../configs/loggerWinston")
 const MedicalResponse = require("../../../utils/medicalResponse")
-async function getTimeInterval(userId) {
+async function getTimeInterval(request) {
     try {
+        const decodedToken = request.auth;
+        // Extract user ID from the decoded JWT token's payload
+        const userId = decodedToken.payload.sub;
+
         let document = await MedicineRoutineUserModel.findOne({id: userId}, MONGO_FILTER, {
             lean: true
         }).exec();
+
+        LOGGER.info(request, "Successfully got Time Interval for User")
         return MedicalResponse.successWithDataOnly(document.medicineRoutine.timeIntervals, 200)
-    } catch (e) {
-        console.error(e)
+    } catch (error) {
+        LOGGER.error(request, error.message)
+        LOGGER.debug(request, error.stack)
         return MedicalResponse.internalServerError()
     }
 }
@@ -23,31 +31,38 @@ async function addTimeInterval(request) {
         .findOne({id: userId}, null, null).exec();
 
     if(!document) {
-        console.error("No user with userId")
+        LOGGER.error("No user with userId, even thought it was a valid token")
         return MedicalResponse.error("No User with userId", 400)
     }
+
     let newTimeInterval = request.body.times;
     let dbIntervalSet = new Set(document.medicineRoutine.timeIntervals);
     let length = newTimeInterval.length + dbIntervalSet.size;
+
     if (length > 10) {
+        LOGGER.error(request, "cannot have more than 10 time Interval, currently at " + dbInterval.length)
         return MedicalResponse.error("cannot have more than 10 time Interval, currently at " + dbInterval.length, 400)
     }
 
     for (let i = 0; i < newTimeInterval.length; i++) {
         if (dbIntervalSet.has(newTimeInterval[i])) {
+            LOGGER.error(request, "Cannot Insert Duplicate Time Slot " + newTimeInterval[i])
             return MedicalResponse.error("cannot insert duplicate time slot", 400)
         }
         dbIntervalSet.add(newTimeInterval[i])
     }
+
     document.medicineRoutine.timeIntervals = Array.from(dbIntervalSet);
+
     timeIntervalEnum.sortTimeIntervals(document.medicineRoutine.timeIntervals)
+
     for (let i = 0; i < 7; i++) {
         for (let j = 0; j < newTimeInterval.length; j++) {
             document.medicineRoutine.days[i].pillsTimeSlots.push(MedicineRoutineUserModel.createTimeInterval(newTimeInterval[j]));
         }
     }
-    sortPillsTimeSlots(document.medicineRoutine.days)
 
+    sortPillsTimeSlots(document.medicineRoutine.days)
 
     let result = await document.save();
     return MedicalResponse.successWithDataOnly(result, 201)
@@ -62,11 +77,13 @@ async function deleteTimeIntervals(request) {
         const userId = decodedToken.payload.sub;
         let document = await MedicineRoutineUserModel.findOne({id: userId}, null, null).exec();
 
+        let counter = 0;
         // Remove times from routineRoutes.timeIntervals
         for (let i = 0; i < document.medicineRoutine.timeIntervals.length; i++) {
             const timeInterval = document.medicineRoutine.timeIntervals[i];
             if (timesToRemove.includes(timeInterval)) {
                 document.medicineRoutine.timeIntervals.splice(i, 1);
+                counter++;
                 i--; // Decrement i to adjust for removed item
             }
         }
@@ -78,19 +95,14 @@ async function deleteTimeIntervals(request) {
 
         // Save the modified document back to the database
         let result = await document.save();
-        return {
-            success: true,
-            code: 201,
-            data: result
-        };
+        LOGGER.info(request, `Successfully removed ${counter} time slots`)
+        result = result.toObject();
+        return MedicalResponse.successWithDataOnly(result.medicineRoutine.timeIntervals, 201)
     }
     catch (error) {
-      console.log(error);
-        return {
-            success: false,
-            code: 500,
-            data: "INTERNAL ERROR: " + error.msg
-        };
+        LOGGER.debug(request, error.stack);
+        LOGGER.error(request, error.message);
+        return MedicalResponse.internalServerError();
     }
 }
 
@@ -105,16 +117,13 @@ async function updateTimeIntervals(request) {
         let existingTimeIntervals = document.medicineRoutine.timeIntervals;
         let result = null;
 
-
+        LOGGER.debug(request, timeIntervals)
         for (const {from, to} of timeIntervals) {
             // Validate the update
             result = validateTimeIntervalUpdate(existingTimeIntervals, from, to);
             if (!result.success) {
-                return {
-                    success: false,
-                    code: 400,
-                    msg: result.msg
-                }
+                LOGGER.error(request, result.msg)
+                return MedicalResponse.error(result.msg, 400)
             }
             // If validation passes, update the existing time intervals
             existingTimeIntervals = existingTimeIntervals.map(interval => {
@@ -136,26 +145,19 @@ async function updateTimeIntervals(request) {
                 }
             }
         }
+        LOGGER.info(request, "Saving updated document for update time interval")
         let updatedDocument = await document.save();
-        return {
-            success: true,
-            code: 201,
-            data: updatedDocument
-        }
+        return MedicalResponse.successWithDataOnly(updatedDocument.toObject(), 201)
     }
     catch (error) {
-        console.error(error)
-        console.error("ERROR IN UPDATE TIME")
-        return {
-            success: false,
-            code: 500,
-            msg: "INTERNAL SERVER ERROR"
-        }
+        LOGGER.error(request, error.message);
+        LOGGER.debug(request, error.stack);
+        return MedicalResponse.internalServerError();
     }
 }
 
 // Function to validate a single time interval update
-const validateTimeIntervalUpdate = (existingTimes, from, to) => {
+function validateTimeIntervalUpdate(existingTimes, from, to) {
     // Check if 'from' exists in existing time intervals
     if (!existingTimes.includes(from)) {
         return {
@@ -176,6 +178,6 @@ const validateTimeIntervalUpdate = (existingTimes, from, to) => {
         success: true,
         msg: ""
     }
-};
+}
 
 module.exports = {addTimeInterval, getTimeInterval, deleteTimeIntervals, updateTimeIntervals}

@@ -111,11 +111,12 @@ async function acceptViewerRequest(request) {
         await viewerRequest.save();
 
         // Add the sender to the recipient's viewers list
-        await viewModelService.addNewViewerToList(viewerRequest.sender, viewerRequest.receiver)
+        await viewModelService.addNewViewerToList(request, viewerRequest.sender, viewerRequest.receiver)
 
         return MedicalResponse.successWithMessage("Viewer Request Accepted", 200);
     } catch (error) {
-        console.error(error);
+        LOGGER.error(request, error.message)
+        LOGGER.debug(request, error.stack)
         return MedicalResponse.internalServerError();
     }
 }
@@ -127,21 +128,26 @@ async function rejectViewerRequest(request) {
     const [provider, authId] = userId.split('|');
     const requestId = request.params.requestId;
 
-    const viewerRequest = await ViewRequestModel.findById(requestId);
+    const viewerRequest = await ViewRequestModel.findById(requestId, null, null).exec();
+
     if (!viewerRequest) {
         return MedicalResponse.error("Viewer Request Not Found", 404);
     }
+
     if (viewerRequest.receiver.toString() !== authId) {
-        return MedicalResponse.error("UNAUTHORIZED", 401)
+        return MedicalResponse.error("Unauthorized: cannot reject request that you are not the receiver", 401)
     }
 
     if (viewerRequest.status === ViewRequestModel.getRejectedStatus() || viewerRequest.status === ViewRequestModel.getAcceptedStatus()) {
         let msg = (viewerRequest.status === ViewRequestModel.getRejectedStatus() ? VIEWER_REQUEST_ALREADY_REJECTED : VIEWER_REQUEST_ALREADY_ACCEPTED);
+        LOGGER.info(request, msg);
         return MedicalResponse.error(msg, 400);
     }
 
     viewerRequest.status = ViewRequestModel.getRejectedStatus();
+
     await viewerRequest.save();
+    LOGGER.info(request, `Viewer request updated to  ${ViewRequestModel.getRejectedStatus()}`)
     return MedicalResponse.successWithMessage(`Viewer request set to '${ViewRequestModel.getRejectedStatus()}'`);
 }
 
@@ -157,7 +163,8 @@ async function getPendingRequests(request, isSender) {
             .populate("receiver", 'name email')
             .lean();
 
-        const listOfPendingRequestsSent = await ViewRequestModel.find({status: 'PENDING', sender: authId})
+        const listOfPendingRequestsSent = await ViewRequestModel
+            .find({status: ViewRequestModel.getPendingStatus(), sender: authId})
             .populate('sender', 'name email')
             .populate("receiver", 'name email')
             .lean();
@@ -166,9 +173,11 @@ async function getPendingRequests(request, isSender) {
             sent: listOfPendingRequestsSent,
             received:listOfPendingRequestsReceived
         }
+        LOGGER.info(request, "Successfully got list of Received and Sent Request")
         return MedicalResponse.successWithDataOnly(data)
     } catch (error) {
-        console.log(error)
+        LOGGER.debug(request, error.message)
+        LOGGER.error(request, error.stack)
         return MedicalResponse.internalServerError();
     }
 }
@@ -182,20 +191,23 @@ async function cancelRequestToBeSender(request) {
 
         const requestId = request.params.requestId;
 
-        const viewerRequest = await ViewRequestModel.findById(requestId);
+        const viewerRequest = await ViewRequestModel.findById(requestId, null, null);
         if (!viewerRequest) {
+            LOGGER.info(request, `Cannot find Viewer Request ${requestId}`)
             return MedicalResponse.error("Viewer Request Not Found", 404);
         }
         if (viewerRequest.sender.toString() !== authId) {
-            return MedicalResponse.error("UNAUTHORIZED to cancel request", 401)
+            return MedicalResponse.error("Unauthorized: Cannot cancel request that you did not sent", 401)
         }
 
         viewerRequest.status = ViewRequestModel.getCanceledStatus();
         await viewerRequest.save();
+        LOGGER.info(request, `Successfully canceled Viewer Request ${requestId}`)
         return MedicalResponse.successWithMessage("Successfully Canceled Request")
     }
     catch (error) {
-        console.error(error)
+        LOGGER.debug(request, error.message)
+        LOGGER.error(request, error.stack)
         return MedicalResponse.internalServerError();
     }
 }

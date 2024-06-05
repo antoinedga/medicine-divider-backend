@@ -6,10 +6,7 @@ const TIME_PATH = "/time";
 
 // get time intervals
 router.get(TIME_PATH, async function (req, res) {
-    const decodedToken = req.auth;
-    // Extract user ID from the decoded JWT token's payload
-    const userId = decodedToken.payload.sub;
-    let result = await timeIntervalService.getTimeInterval(userId);
+    let result = await timeIntervalService.getTimeInterval(req);
     return res.status(result.code).send(result);
 });
 

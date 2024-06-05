@@ -1,39 +1,48 @@
 const MedicineRoutineUser = require("../../../../models/medicineRoutineUserModel");
 const ViewSystemModel = require("../../../../models/viewSystemModel")
 const MedicalResponse = require("../../../../utils/medicalResponse")
+const LOGGER = require("../../../../configs/loggerWinston")
 
 async function getListOfViewers(request) {
-    const decodedToken = request.auth;
-    // Extract user ID from the decoded JWT token's payload
-    const userId = decodedToken.payload.sub;
-    const [provider, authId] = userId.split('|');
+    try {
+        const decodedToken = request.auth;
+        // Extract user ID from the decoded JWT token's payload
+        const userId = decodedToken.payload.sub;
+        const [provider, authId] = userId.split('|');
 
-    let userViewers = await ViewSystemModel.findOne({userId: authId})
-        .populate('viewers', 'name email')
-        .lean().exec();
-    if (userViewers == null) {
-        console.log("error")
+        let userViewers = await ViewSystemModel.findOne({userId: authId})
+            .populate('viewers', 'name email')
+            .lean().exec();
+
+        if (userViewers == null) {
+            LOGGER.error(request, "Somehow valid auth0 User but no ViewSystemModel")
+            return MedicalResponse.internalServerError();
+        }
+        LOGGER.info(request, "Successfully got List Of Viewers")
+        return MedicalResponse.successWithDataOnly(userViewers, 200)
+    }
+    catch (error) {
+        LOGGER.error(request, error.message);
+        LOGGER.debug(request, error.stack);
         return MedicalResponse.internalServerError();
     }
-
-    return MedicalResponse.successWithDataOnly(userViewers, 200)
 }
 
 // used within viewRequestService, try catch in that method
-async function addNewViewerToList(sender, receiver) {
+async function addNewViewerToList(request, sender, receiver) {
     try {
         let userViewers = await ViewSystemModel.findOne({userId: sender}).exec();
 
         if (userViewers == null) {
-            console.log("error")
+            LOGGER.error(request, "Somehow valid auth0 User but no ViewSystemModel")
             return MedicalResponse.internalServerError();
         }
         userViewers.viewers.push(receiver)
         await userViewers.save();
-        console.log("Successfully added user to list")
+        LOGGER.info(request, "Successfully added user to list")
     }
     catch (error) {
-        console.log(error)
+        // error log can be done in other function for accept request
         throw error
     }
 }
@@ -50,11 +59,12 @@ async function removeFromViewer(request) {
         const viewerModel = await ViewSystemModel.findOne({userId: authId}).exec();
 
         if (!userToRemove) {
+            LOGGER.info(request, `No Such User found ${request.body.email}`)
             return MedicalResponse.error("No such user", 400)
         }
 
         if (!viewerModel) {
-            console.error("ERROR, NO viewerSystem record in database")
+            LOGGER.error(request,"User does not have a ViewSystem record in database")
             return MedicalResponse.internalServerError();
         }
 
@@ -62,10 +72,12 @@ async function removeFromViewer(request) {
             return (viewer.toString() !== userToRemove._id.toString())
         });
         await viewerModel.save();
+        LOGGER.info(request, `Removed ${userToRemove.email} from viewers list of ${authId}`)
         return MedicalResponse.successWithMessage(`Removed ${userToRemove.email} from viewers list`)
     }
     catch (error) {
-        console.log(error)
+        LOGGER.error(request, error.message)
+        LOGGER.debug(request, error.stack)
         return MedicalResponse.internalServerError();
     }
 }

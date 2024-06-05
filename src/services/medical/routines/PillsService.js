@@ -1,7 +1,7 @@
 const MedicineRoutineUserModel = require("../../../models/medicineRoutineUserModel");
 const {getDayToIndexString, areDaysNameEqual} = require("../../../utils/dayUtil");
-
-
+const LOGGER = require("../../../configs/LOGGERWinston")
+const MedicalResponse = require('../../../utils/medicalResponse')
 async function addPillToRoutine(request) {
     try {
         const decodedToken = request.auth;
@@ -30,21 +30,15 @@ async function addPillToRoutine(request) {
                 })
             })
         });
+
         let result = await documents.save();
-        console.log('Document updated successfully:', result);
-        return {
-            success: true,
-            code: 201,
-            msg: `successfully updated, added ${numberOfAdded} pill${numberOfAdded >= 2 ? "s" : ""} to routine`
-        }
+        LOGGER.info(request,'Document updated successfully:', result);
+        return MedicalResponse.successWithMessage(`successfully updated, added ${numberOfAdded} pill${numberOfAdded >= 2 ? "s" : ""} to routine`, 201)
     }
     catch (error) {
-        console.log(error)
-        return {
-            success: false,
-            code: 400,
-            msg: "ERROR from Database"
-        }
+        LOGGER.debug(request, error.stack)
+        LOGGER.error(request, error.message)
+        return MedicalResponse.internalServerError()
     }
 }
 
@@ -71,23 +65,13 @@ async function deletePillFromRoutineByAllOccurrence(request) {
                     });
             });
         });
-
-
-        return {
-            success: true,
-            code: 200,
-            msg: `Successfully removed ${numberOfDeletes}`,
-            data: document
-        }
+        LOGGER.info(request,`Successfully removed ${numberOfDeletes} pills`)
+        return new MedicalResponse(true,`Successfully removed ${numberOfDeletes} pills`, 200, document)
     }
     catch (error) {
-        console.info(error)
-        console.info("ERROR IN PILL SERVICE");
-        return {
-            success: false,
-            code: 500,
-            msg: "INTERNAL SERVER ERROR"
-        }
+        LOGGER.debug(request, error.stack);
+        LOGGER.error(request, error.message);
+        return MedicalResponse.internalServerError()
     }
 }
 
@@ -120,21 +104,13 @@ async function deletePillFromRoutineByDays(request) {
             });
         });
         document = await document.save();
-        return {
-            success: true,
-            code: 200,
-            msg: `Successfully removed ${numberOfDeletes}`,
-            data: document
-        }
+        LOGGER.info(request, `Removed ${numberOfDeletes} pills`)
+        return MedicalResponse.success(document,`Successfully removed ${numberOfDeletes} pills`, 201)
     }
     catch (error) {
-        console.log(error)
-        console.info("ERROR IN PILL SERVICE");
-        return {
-            success: false,
-            code: 500,
-            msg: "INTERNAL SERVER ERROR"
-        }
+        LOGGER.debug(request, error.stack);
+        LOGGER.error(request, error.message);
+        return MedicalResponse.internalServerError();
     }
 }
 
@@ -164,21 +140,13 @@ async function deletePillFromRoutineByDayTime(request) {
             })
         });
         document = await document.save();
-        return {
-            success: true,
-            code: 200,
-            msg: `Deleted ${numberOfDeletes} Pill` + (numberOfDeletes > 0 ? 's' : ''),
-            data: document
-        }
+        LOGGER.info(request, `Deleted ${numberOfDeletes} Pill` + (numberOfDeletes > 0 ? 's' : ''))
+        return MedicalResponse.success(document, `Deleted ${numberOfDeletes} Pill` + (numberOfDeletes > 0 ? 's' : ''))
     }
     catch (error) {
-        console.debug(error)
-        console.info("ERROR IN PILL SERVICE");
-        return {
-            success: false,
-            code: 500,
-            msg: "INTERNAL SERVER ERROR"
-        }
+        LOGGER.debug(request, error.stack)
+        LOGGER.error(request, error.message);
+        return MedicalResponse.internalServerError()
     }
 }
 
@@ -192,12 +160,8 @@ async function getAllPillsInRoutine(request) {
         let document = await MedicineRoutineUserModel.findOne({id: userId}, null, {lean: true}).exec();
 
         if (document == null) {
-            console.error(`ERROR: user with id: ${userId} from auth0 is valid but no record in database!`)
-            return {
-                success: false,
-                code: 400,
-                msg: "User Does Not Exist"
-            }
+            LOGGER.error(request, `ERROR: user with id: ${userId} from auth0 is valid but no record in database!`)
+            return MedicalResponse.internalServerError()
         }
 
         const allPillNames = [];
@@ -210,24 +174,15 @@ async function getAllPillsInRoutine(request) {
             });
         });
 
-// Remove duplicates
+        // Remove duplicates
         const uniquePillNames = [...new Set(allPillNames)];
-        return {
-            success: true,
-            code: 200,
-            data: {
-                pills: uniquePillNames
-            }
-        }
+        LOGGER.info(request, "User got list of medicines names")
+        return MedicalResponse.successWithDataOnly({pills: uniquePillNames})
     }
     catch (error) {
-        console.debug(error);
-        console.error("ERROR IN GET ALL PILLS");
-        return {
-            success: true,
-            code: 200,
-            msg: "INTERNAL SERVER ERROR"
-        }
+        LOGGER.error(request, error.message);
+        LOGGER.debug(request, error.stack);
+        return MedicalResponse.internalServerError()
     }
 }
 
