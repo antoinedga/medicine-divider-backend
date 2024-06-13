@@ -16,7 +16,7 @@ const API_ROUTINE_PATH = process.env.API_ROUTINE_PATH;
 const API_VIEW_PATH = process.env.API_VIEW_PATH
 
 router.use(async (req, res, next) => {
-    if (req.path.startsWith('/auth')) {
+    if (req.path.startsWith('/api/auth')) {
         // Skip checkToken middleware for user routes
         return next();
     }
@@ -25,6 +25,9 @@ router.use(async (req, res, next) => {
 });
 // to have the id from auth0 token extracted a head of time
 router.use((req, res, next) => {
+    if (req.path.startsWith('/api/auth')) {
+        return next();
+    }
     let [provider, authId] = req.auth.payload.sub.split("|")
     req.userId = authId;
     return next();

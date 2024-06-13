@@ -9,7 +9,7 @@ async function getTimeInterval(request) {
         // Extract user ID from the decoded JWT token's payload
         const userId = request.userId;
 
-        let document = await MedicineRoutineUserModel.findOne({id: userId}, MONGO_FILTER, {
+        let document = await MedicineRoutineUserModel.findOne({_id: userId}, MONGO_FILTER, {
             lean: true
         }).exec();
 
@@ -26,7 +26,7 @@ async function addTimeInterval(request) {
     // Extract user ID from the decoded JWT token's payload
     const userId = request.userId;
     let document = await MedicineRoutineUserModel
-        .findOne({id: userId}, null, null).exec();
+        .findOne({_id: userId}, null, null).exec();
 
     if(!document) {
         LOGGER.error("No user with userId, even thought it was a valid token")
@@ -72,7 +72,7 @@ async function deleteTimeIntervals(request) {
 
         // Extract user ID from the decoded JWT token's payload
         const userId = request.userId;
-        let document = await MedicineRoutineUserModel.findOne({id: userId}, null, null).exec();
+        let document = await MedicineRoutineUserModel.findOne({_id: userId}, null, null).exec();
 
         let counter = 0;
         // Remove times from routineRoutes.timeIntervals
@@ -109,7 +109,7 @@ async function updateTimeIntervals(request) {
         const userId = request.userId;
         const timeIntervals = request.body.updateTime;
 
-        let document = await MedicineRoutineUserModel.findOne({id: userId}, null, null).exec();
+        let document = await MedicineRoutineUserModel.findOne({_id: userId}, null, null).exec();
         let existingTimeIntervals = document.medicineRoutine.timeIntervals;
         let result = null;
 

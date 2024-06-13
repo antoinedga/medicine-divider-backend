@@ -13,7 +13,7 @@ const customMorganFormat = (tokens, req, res, error) => {
     const userAgent = tokens['user-agent'](req, res);
 
     // Accessing auth payload sub from the request object
-    const authPayloadSub = (req.auth !== null)
+    const authPayloadSub = (req.auth !== undefined)
         ? req.auth.payload.sub : 'N/A'; // If auth payload sub is not available, default to 'N/A'
     const requestId = req.id || req.requestId || 'N/A';
 

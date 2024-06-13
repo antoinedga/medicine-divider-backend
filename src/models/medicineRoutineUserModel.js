@@ -52,10 +52,14 @@ function arrayLimit(val) {
 
 const MedicineDividerUserSchema = new Schema({
     _id: {type: String, required: true},
-    id: { type: String, required: true, unique: true }, // Use Auth0 user_id as ID
-    name: { type: String, required: true },
+    auth0Id: { type: String, required: true, unique: true }, // Use Auth0 user_id as ID
     email: { type: String, required: true, index: true, unique: true },
-    dateOfBirth: { type: Date, required: true },
+    name: { type: String, required: true },
+    firstName: {type: String, required:true, minLength: 3, maxLength: 50},
+    middleName: {type:String, default: "", maxLength: 50},
+    lastName: {type: String, required: true, maxLength: 50},
+    dateOfBirth: { type: Date, required: true},
+    gender: {type: String, maxLength: 25},
     medicineRoutine: { type: MedicineRoutineSchema, default: () => ({}) },
 }, {
     timestamps: true,
